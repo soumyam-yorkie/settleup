@@ -1,0 +1,13 @@
+---
+description: TypeScript and React Native coding standards for SettleUp
+alwaysApply: true
+---
+
+# Coding Standards
+
+- Use TypeScript types for all public function params and return values.
+- Prefer functional components and custom hooks over class components.
+- Keep components small and focused; move non-UI logic out of screens/components.
+- Use clear names: `camelCase` for variables/functions, `PascalCase` for components/types.
+- Remove dead code, unused imports, and commented-out blocks before finishing changes.
+- Avoid `any`; use explicit interfaces/types in `src/types` where possible.
