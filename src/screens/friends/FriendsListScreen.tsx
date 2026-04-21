@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity } from 'react-native';
-import { theme } from '../../utils/theme';
-import { FriendCard } from '../../components/FriendCard';
-import { MOCK_FRIENDS } from '../../services/mockData';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserPlus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { theme } from '../../utils/theme';
+import { FriendCard } from '../../components/FriendCard';
+import { MOCK_FRIENDS } from '../../services/mockData';
 import { RootStackParamList } from '../../types/navigation';
 
 export const FriendsListScreen = () => {

@@ -57,6 +57,8 @@ export const theme = {
     text: palette.onSurface,
     textSecondary: palette.onSurfaceVariant,
     border: palette.outlineVariant,
+    success: palette.secondary,
+    danger: palette.error,
   },
   spacing: {
     xs: 4,

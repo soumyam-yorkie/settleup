@@ -1,12 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Image } from 'react-native';
-import { theme } from '../../utils/theme';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Bell, ArrowUp, ArrowDown, ShoppingBag, Fuel, Ticket } from 'lucide-react-native';
+
 import { AddExpenseFAB } from '../../components/AddExpenseFAB';
 import { MOCK_GROUPS, MOCK_EXPENSES, MOCK_USER } from '../../services/mockData';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { Bell, ArrowUp, ArrowDown, ShoppingBag, Fuel, Ticket } from 'lucide-react-native';
+import { theme } from '../../utils/theme';
+
 
 const GROUP_IMAGES = [
   'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=80',
@@ -30,9 +33,10 @@ export const DashboardScreen = () => {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Image
-              source={{ uri: MOCK_USER.avatarUrl }}
+              source={{ uri: MOCK_USER.avatarUrl ?? '' }}
               style={styles.avatar}
             />
+
             <Text style={styles.brandName}>SettleUp</Text>
           </View>
           <TouchableOpacity style={styles.notifButton}>
@@ -114,7 +118,8 @@ export const DashboardScreen = () => {
         </View>
 
         {MOCK_EXPENSES.map((expense, index) => {
-          const isPaidByMe = expense.paidBy === 'u1';
+          const isPaidByMe = expense.paidBy === MOCK_USER.id;
+
           const IconComponent = ACTIVITY_ICONS[index % ACTIVITY_ICONS.length];
           return (
             <TouchableOpacity key={expense.id} style={styles.activityItem}>
@@ -308,7 +313,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   groupImageOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(31,26,111,0.2)',
   },
   groupName: {

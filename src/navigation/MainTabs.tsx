@@ -81,33 +81,26 @@ export const MainTabs = () => {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="Dashboard"
         component={DashboardScreen}
-        options={{
-          tabBarIcon: DashboardIcon,
-        }}
+        options={{ tabBarIcon: DashboardIcon, tabBarLabel: 'Home' }}
       />
       <Tab.Screen
         name="Groups"
         component={GroupsListScreen}
-        options={{
-          tabBarIcon: GroupsIcon,
-        }}
+        options={{ tabBarIcon: GroupsIcon }}
       />
       <Tab.Screen
-        name="Activity"
+        name="Friends"
         component={FriendsListScreen}
-        options={{
-          tabBarIcon: FriendsIcon,
-        }}
+        options={{ tabBarIcon: FriendsIcon, tabBarLabel: 'Activity' }}
       />
       <Tab.Screen
-        name="Settings"
+        name="Profile"
         component={ProfileScreen}
-        options={{
-          tabBarIcon: ProfileIcon,
-        }}
+        options={{ tabBarIcon: ProfileIcon, tabBarLabel: 'Settings' }}
       />
+
     </Tab.Navigator>
   );
 };

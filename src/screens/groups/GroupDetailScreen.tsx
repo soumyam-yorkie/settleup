@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
-import { theme } from '../../utils/theme';
-import { MOCK_EXPENSES } from '../../services/mockData';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Receipt, Users, Plus, Filter } from 'lucide-react-native';
+
+import { MOCK_EXPENSES, MOCK_USER } from '../../services/mockData';
+import { theme } from '../../utils/theme';
+
 
 export const GroupDetailScreen = ({ route }: any) => {
   const { groupId } = route.params;
@@ -52,14 +55,15 @@ export const GroupDetailScreen = ({ route }: any) => {
             <View style={styles.expenseInfo}>
               <Text style={styles.expenseTitle}>{item.description}</Text>
               <Text style={styles.expenseMeta}>
-                Paid by {item.paidBy === 'u1' ? 'You' : 'Others'} • {new Date(item.date).toLocaleDateString()}
+                Paid by {item.paidBy === MOCK_USER.id ? 'You' : 'Others'} • {new Date(item.date).toLocaleDateString()}
               </Text>
             </View>
             <View style={styles.expenseBalance}>
               <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
-              <Text style={[styles.yourPart, item.paidBy === 'u1' ? styles.partPositive : styles.partNegative]}>
-                {item.paidBy === 'u1' ? 'you lent $100' : 'you owe $30'}
+              <Text style={[styles.yourPart, item.paidBy === MOCK_USER.id ? styles.partPositive : styles.partNegative]}>
+                {item.paidBy === MOCK_USER.id ? 'you lent $100' : 'you owe $30'}
               </Text>
+
             </View>
           </TouchableOpacity>
         )}

@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Image } from 'react-native';
-import { theme } from '../../utils/theme';
-import { MOCK_USER } from '../../services/mockData';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, Bell, CreditCard, Shield, ChevronRight, LogOut } from 'lucide-react-native';
+
+import { MOCK_USER } from '../../services/mockData';
+import { theme } from '../../utils/theme';
+
 
 export const ProfileScreen = () => {
   const menuItems = [
@@ -16,7 +19,8 @@ export const ProfileScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
-          <Image source={{ uri: MOCK_USER.avatarUrl }} style={styles.avatar} />
+          <Image source={{ uri: MOCK_USER.avatarUrl ?? '' }} style={styles.avatar} />
+
           <Text style={styles.userName}>{MOCK_USER.name}</Text>
           <Text style={styles.userEmail}>{MOCK_USER.email}</Text>
           <TouchableOpacity style={styles.editButton}>

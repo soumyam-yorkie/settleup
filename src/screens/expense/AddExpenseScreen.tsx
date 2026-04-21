@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
-import { theme } from '../../utils/theme';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Users, Info, DollarSign } from 'lucide-react-native';
+
+import { theme } from '../../utils/theme';
 
 export const AddExpenseScreen = ({ navigation }: any) => {
   const [amount, setAmount] = useState('');

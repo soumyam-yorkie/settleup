@@ -11,3 +11,28 @@ alwaysApply: true
 - Use clear names: `camelCase` for variables/functions, `PascalCase` for components/types.
 - Remove dead code, unused imports, and commented-out blocks before finishing changes.
 - Avoid `any`; use explicit interfaces/types in `src/types` where possible.
+
+## Import Ordering
+
+Always order imports in the following groups, separated by a blank line:
+
+1. **React** — `import React from 'react'`
+2. **React Native core** — `import { View, Text, ... } from 'react-native'`
+3. **Third-party libraries** — `@react-navigation/...`, `lucide-react-native`, etc.
+4. **Internal — components** — `../../components/...`
+5. **Internal — services / data** — `../../services/...`
+6. **Internal — types** — `../../types/...`
+7. **Internal — utils / theme** — `../../utils/...`
+
+Example:
+```ts
+import React from 'react';
+import { View, Text } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Bell } from 'lucide-react-native';
+
+import { SummaryCard } from '../../components/SummaryCard';
+import { MOCK_USER } from '../../services/mockData';
+import { RootStackParamList } from '../../types/navigation';
+import { theme } from '../../utils/theme';
+```
