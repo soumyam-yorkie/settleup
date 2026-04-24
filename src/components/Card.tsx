@@ -18,25 +18,33 @@ export const Card = ({
   variant = 'elevated',
   padding = 'md',
 }: CardProps) => {
-  const Container = onPress ? TouchableOpacity : View;
-  
   const paddingValue = typeof padding === 'string' ? theme.spacing[padding] : padding;
 
+  const containerStyle = [
+    styles.card,
+    variant === 'elevated' && styles.elevated,
+    variant === 'outline' && styles.outline,
+    variant === 'flat' && styles.flat,
+    { padding: paddingValue },
+    style,
+  ];
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.9}
+        style={containerStyle}
+      >
+        {children}
+      </TouchableOpacity>
+    );
+  }
+
   return (
-    <Container
-      onPress={onPress}
-      activeOpacity={onPress ? 0.9 : 1}
-      style={[
-        styles.card,
-        variant === 'elevated' && styles.elevated,
-        variant === 'outline' && styles.outline,
-        variant === 'flat' && styles.flat,
-        { padding: paddingValue },
-        style,
-      ]}
-    >
+    <View style={containerStyle}>
       {children}
-    </Container>
+    </View>
   );
 };
 

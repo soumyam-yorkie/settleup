@@ -3,9 +3,13 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Mail, Search } from 'lucide-react-native';
 
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
 
-export const AddFriendScreen = ({ navigation }: any) => {
+type Props = NativeStackScreenProps<RootStackParamList, 'AddFriend'>;
+
+export const AddFriendScreen = ({ navigation }: Props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 

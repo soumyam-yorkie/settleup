@@ -9,7 +9,7 @@ import { AddExpenseFAB } from '../../components/AddExpenseFAB';
 import { Card } from '../../components/Card';
 import { SectionHeader } from '../../components/SectionHeader';
 import { MOCK_GROUPS, MOCK_EXPENSES, MOCK_USER } from '../../services/mockData';
-import { RootStackParamList } from '../../types/navigation';
+import { MainScreenNavigationProp } from '../../types/navigation';
 import { theme } from '../../utils/theme';
 
 const GROUP_IMAGES = [
@@ -21,7 +21,7 @@ const GROUP_IMAGES = [
 const ACTIVITY_ICONS = [ShoppingBag, Fuel, Ticket];
 
 export const DashboardScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<MainScreenNavigationProp>();
 
   const handleAddExpense = () => {
     navigation.navigate('AddExpense');

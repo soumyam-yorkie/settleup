@@ -9,7 +9,12 @@ import { SectionHeader } from '../../components/SectionHeader';
 import { MOCK_EXPENSES, MOCK_USER } from '../../services/mockData';
 import { theme } from '../../utils/theme';
 
-export const GroupDetailScreen = ({ route }: any) => {
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types/navigation';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'GroupDetail'>;
+
+export const GroupDetailScreen = ({ route }: Props) => {
   const { groupId } = route.params;
   const groupExpenses = MOCK_EXPENSES.filter((e) => e.groupId === groupId);
 
@@ -78,9 +83,26 @@ export const GroupDetailScreen = ({ route }: any) => {
             </View>
             <View style={styles.expenseBalance}>
               <Text style={styles.expenseAmount}>${item.amount.toFixed(2)}</Text>
-              <Text style={[styles.yourPart, item.paidBy === MOCK_USER.id ? styles.partPositive : styles.partNegative]}>
-                {item.paidBy === MOCK_USER.id ? 'you lent $100' : 'you owe $30'}
-              </Text>
+              {(() => {
+                const myShare = item.splits.find((s: any) => s.userId === MOCK_USER.id)?.amount || 0;
+                const isPaidByMe = item.paidBy === MOCK_USER.id;
+                
+                if (isPaidByMe) {
+                  const lentAmount = item.amount - myShare;
+                  return (
+                    <Text style={[styles.yourPart, styles.partPositive]}>
+                      you lent ${lentAmount.toFixed(2)}
+                    </Text>
+                  );
+                } else if (myShare > 0) {
+                  return (
+                    <Text style={[styles.yourPart, styles.partNegative]}>
+                      you owe ${myShare.toFixed(2)}
+                    </Text>
+                  );
+                }
+                return null;
+              })()}
             </View>
           </Card>
         )}

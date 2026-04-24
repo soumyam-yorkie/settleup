@@ -7,9 +7,14 @@ import { Button } from '../../components/Button';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { theme } from '../../utils/theme';
 
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types/navigation';
+
 type SplitType = 'Equally' | 'Unequally' | 'Percentages';
 
-export const AddExpenseScreen = ({ navigation }: any) => {
+type Props = NativeStackScreenProps<RootStackParamList, 'AddExpense'>;
+
+export const AddExpenseScreen = ({ navigation, route }: Props) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [splitType, setSplitType] = useState<SplitType>('Equally');
