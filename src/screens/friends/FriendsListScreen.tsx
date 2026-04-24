@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { UserPlus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserPlus } from 'lucide-react-native';
 
-import { theme } from '../../utils/theme';
+import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
 import { FriendCard } from '../../components/FriendCard';
 import { MOCK_FRIENDS } from '../../services/mockData';
 import { RootStackParamList } from '../../types/navigation';
+import { theme } from '../../utils/theme';
 
 export const FriendsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -16,9 +18,9 @@ export const FriendsListScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.summary}>
+        <Card variant="flat" style={styles.summary} padding={theme.spacing.md}>
           <Text style={styles.summaryText}>You are owed $100.00 in total</Text>
-        </View>
+        </Card>
 
         {MOCK_FRIENDS.map((friend) => (
           <FriendCard
@@ -32,14 +34,13 @@ export const FriendsListScreen = () => {
         ))}
       </ScrollView>
 
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
+      <Button
+        variant="primary"
+        leftIcon={UserPlus}
+        title="Add Friend"
         onPress={() => navigation.navigate('AddFriend')}
-      >
-        <UserPlus color={theme.colors.white} size={24} />
-        <Text style={styles.fabText}>Add Friend</Text>
-      </TouchableOpacity>
+        style={styles.fab}
+      />
     </SafeAreaView>
   );
 };
@@ -55,8 +56,6 @@ const styles = StyleSheet.create({
   },
   summary: {
     backgroundColor: theme.colors.secondaryContainer,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
     marginBottom: theme.spacing.lg,
     alignItems: 'center',
   },
@@ -69,17 +68,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.round,
     ...theme.shadows.fab,
   },
-  fabText: {
-    color: theme.colors.white,
-    fontWeight: 'bold',
-    marginLeft: theme.spacing.sm,
-  },
 });
+

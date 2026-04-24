@@ -89,10 +89,10 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   oweIconContainer: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: theme.colors.oweRedBg,
   },
   owedIconContainer: {
-    backgroundColor: '#D1FAE5',
+    backgroundColor: theme.colors.owedGreenBg,
   },
   statLabel: {
     fontSize: 12,

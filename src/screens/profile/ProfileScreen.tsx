@@ -1,49 +1,63 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, Bell, CreditCard, Shield, ChevronRight, LogOut } from 'lucide-react-native';
 
+import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
 import { MOCK_USER } from '../../services/mockData';
 import { theme } from '../../utils/theme';
-
 
 export const ProfileScreen = () => {
   const menuItems = [
     { icon: Bell, label: 'Notifications', color: theme.colors.primaryLight },
     { icon: CreditCard, label: 'Payment Methods', color: theme.colors.secondary },
-    { icon: Shield, label: 'Security', color: '#F59E0B' },
+    { icon: Shield, label: 'Security', color: theme.colors.warning },
     { icon: Settings, label: 'Account Settings', color: theme.colors.outline },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileHeader}>
+        <Card style={styles.profileHeader} padding={theme.spacing.xl}>
           <Image source={{ uri: MOCK_USER.avatarUrl ?? '' }} style={styles.avatar} />
-
           <Text style={styles.userName}>{MOCK_USER.name}</Text>
           <Text style={styles.userEmail}>{MOCK_USER.email}</Text>
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Edit Profile"
+            onPress={() => {}}
+            style={styles.editButton}
+          />
+        </Card>
 
-        <View style={styles.menuSection}>
+        <Card style={styles.menuSection} padding={theme.spacing.sm}>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.menuItem}>
+            <Card
+              key={index}
+              variant="flat"
+              onPress={() => {}}
+              style={styles.menuItem}
+              padding={theme.spacing.md}
+            >
               <View style={[styles.iconContainer, { backgroundColor: item.color + '18' }]}>
                 <item.icon size={20} color={item.color} />
               </View>
               <Text style={styles.menuLabel}>{item.label}</Text>
               <ChevronRight size={20} color={theme.colors.outlineVariant} />
-            </TouchableOpacity>
+            </Card>
           ))}
-        </View>
+        </Card>
 
-        <TouchableOpacity style={styles.logoutButton}>
-          <LogOut size={20} color={theme.colors.error} />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+        <Button
+          variant="danger"
+          leftIcon={LogOut}
+          title="Log Out"
+          onPress={() => {}}
+          style={styles.logoutButton}
+          fullWidth
+        />
 
         <Text style={styles.version}>Version 0.0.1</Text>
       </ScrollView>
@@ -62,10 +76,6 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.xxxl,
-    ...theme.shadows.small,
   },
   avatar: {
     width: 100,
@@ -87,27 +97,15 @@ const styles = StyleSheet.create({
   editButton: {
     marginTop: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.round,
-    borderWidth: 1.5,
-    borderColor: theme.colors.primary,
-  },
-  editButtonText: {
-    color: theme.colors.primary,
-    fontWeight: '700',
-    fontSize: 13,
   },
   menuSection: {
     marginTop: theme.spacing.xl,
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    borderRadius: theme.borderRadius.xxl,
-    padding: theme.spacing.sm,
-    ...theme.shadows.small,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: theme.spacing.md,
+    marginBottom: 0,
+    backgroundColor: 'transparent',
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.surfaceContainerHigh,
   },
@@ -127,19 +125,8 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginTop: theme.spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.xxl,
+    backgroundColor: theme.colors.white,
     ...theme.shadows.small,
-  },
-  logoutText: {
-    marginLeft: theme.spacing.sm,
-    color: theme.colors.error,
-    fontSize: 15,
-    fontWeight: '700',
   },
   version: {
     textAlign: 'center',
@@ -148,3 +135,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+

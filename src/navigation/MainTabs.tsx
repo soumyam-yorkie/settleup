@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Home, Users, UserPlus, Settings } from 'lucide-react-native';
+import { Users, User, Settings, ReceiptText } from 'lucide-react-native';
 import { DashboardScreen } from '../screens/dashboard/DashboardScreen';
 import { GroupsListScreen } from '../screens/groups/GroupsListScreen';
 import { FriendsListScreen } from '../screens/friends/FriendsListScreen';
@@ -10,44 +10,48 @@ import { theme } from '../utils/theme';
 
 const Tab = createBottomTabNavigator();
 
-const DashboardIcon = ({ color, size: _size, focused }: { color: string; size: number; focused: boolean }) => (
-  focused ? (
-    <View style={styles.activeIconContainer}>
-      <Home color={theme.colors.white} size={22} />
+const TabIcon = ({ 
+  Icon, 
+  label, 
+  focused 
+}: { 
+  Icon: any; 
+  label: string; 
+  focused: boolean 
+}) => {
+  return (
+    <View style={styles.tabItem}>
+      <View style={[styles.pillContainer, focused && styles.activePill]}>
+        <Icon 
+          color={focused ? theme.colors.primary : theme.colors.inactive} 
+          size={22} 
+        />
+        <Text 
+          style={[styles.tabLabel, focused && styles.activeTabLabel]}
+          numberOfLines={1}
+          allowFontScaling={false}
+        >
+          {label}
+        </Text>
+      </View>
     </View>
-  ) : (
-    <Home color={color} size={22} />
-  )
+  );
+};
+
+const ActivityIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon Icon={ReceiptText} label="Activity" focused={focused} />
 );
 
-const GroupsIcon = ({ color, size: _size, focused }: { color: string; size: number; focused: boolean }) => (
-  focused ? (
-    <View style={styles.activeIconContainer}>
-      <Users color={theme.colors.white} size={22} />
-    </View>
-  ) : (
-    <Users color={color} size={22} />
-  )
+const GroupsIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon Icon={Users} label="Groups" focused={focused} />
 );
 
-const FriendsIcon = ({ color, size: _size, focused }: { color: string; size: number; focused: boolean }) => (
-  focused ? (
-    <View style={styles.activeIconContainer}>
-      <UserPlus color={theme.colors.white} size={22} />
-    </View>
-  ) : (
-    <UserPlus color={color} size={22} />
-  )
+const FriendsIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon Icon={User} label="Friends" focused={focused} />
 );
 
-const ProfileIcon = ({ color, size: _size, focused }: { color: string; size: number; focused: boolean }) => (
-  focused ? (
-    <View style={styles.activeIconContainer}>
-      <Settings color={theme.colors.white} size={22} />
-    </View>
-  ) : (
-    <Settings color={color} size={22} />
-  )
+const AccountIcon = ({ focused }: { focused: boolean }) => (
+  <TabIcon Icon={Settings} label="Account" focused={focused} />
 );
 
 export const MainTabs = () => {
@@ -55,27 +59,34 @@ export const MainTabs = () => {
     <Tab.Navigator
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: '#94A3B8',
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 2,
-        },
+        tabBarInactiveTintColor: theme.colors.inactive,
+        tabBarShowLabel: false,
+        tabBarButton: (props) => (
+          <Pressable 
+            {...props} 
+            android_ripple={null}
+            style={({ pressed }) => [
+              props.style,
+            ]}
+          />
+        ),
         tabBarStyle: {
-          backgroundColor: 'rgba(255,255,255,0.85)',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: theme.colors.white,
           borderTopWidth: 0,
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
-          paddingTop: 8,
-          paddingBottom: 28,
-          height: 80,
-          position: 'absolute',
-          shadowColor: '#1F1A6F',
+          height: 90,
+          paddingBottom: 24,
+          paddingTop: 18,
+          shadowColor: theme.colors.black,
           shadowOffset: { width: 0, height: -8 },
-          shadowOpacity: 0.06,
-          shadowRadius: 24,
-          elevation: 12,
+          shadowOpacity: 0.08,
+          shadowRadius: 15,
+          elevation: 20,
         },
         headerShown: false,
       }}
@@ -83,7 +94,7 @@ export const MainTabs = () => {
       <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
-        options={{ tabBarIcon: DashboardIcon, tabBarLabel: 'Home' }}
+        options={{ tabBarIcon: ActivityIcon }}
       />
       <Tab.Screen
         name="Groups"
@@ -93,25 +104,46 @@ export const MainTabs = () => {
       <Tab.Screen
         name="Friends"
         component={FriendsListScreen}
-        options={{ tabBarIcon: FriendsIcon, tabBarLabel: 'Activity' }}
+        options={{ tabBarIcon: FriendsIcon }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarIcon: ProfileIcon, tabBarLabel: 'Settings' }}
+        options={{ tabBarIcon: AccountIcon }}
       />
-
     </Tab.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
-  activeIconContainer: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 24,
-    width: 44,
-    height: 44,
+  tabItem: {
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  pillContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+    height: 56,
+    borderRadius: 20,
+  },
+  activePill: {
+    backgroundColor: theme.colors.activeTab,
+    width: 75,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.inactive,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  activeTabLabel: {
+    color: theme.colors.primary,
+  },
 });
+
+
+
+

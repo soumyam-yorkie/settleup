@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Users, Info, DollarSign } from 'lucide-react-native';
 
+import { Button } from '../../components/Button';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { theme } from '../../utils/theme';
+
+type SplitType = 'Equally' | 'Unequally' | 'Percentages';
 
 export const AddExpenseScreen = ({ navigation }: any) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [splitType, setSplitType] = useState<SplitType>('Equally');
+  const splitOptions: SplitType[] = ['Equally', 'Unequally', 'Percentages'];
 
   const handleSave = () => {
     navigation.goBack();
@@ -44,36 +50,30 @@ export const AddExpenseScreen = ({ navigation }: any) => {
             />
           </View>
 
-          <TouchableOpacity style={styles.selectorRow}>
+          <View style={styles.selectorRow}>
             <Users size={20} color={theme.colors.outline} style={styles.inputIcon} />
             <Text style={styles.selectorText}>Split with you and everyone</Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.splitSection}>
           <Text style={styles.splitHeader}>Split Type</Text>
-          <View style={styles.splitOptions}>
-            <TouchableOpacity style={[styles.splitOption, styles.activeSplitOption]}>
-              <Text style={styles.activeSplitText}>Equally</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.splitOption}>
-              <Text style={styles.splitOptionText}>Unequally</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.splitOption}>
-              <Text style={styles.splitOptionText}>Percentages</Text>
-            </TouchableOpacity>
-          </View>
+          <SegmentedControl
+            tabs={splitOptions}
+            activeTab={splitType}
+            onChange={setSplitType}
+          />
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.saveButton, !amount && styles.disabledButton]}
+        <Button
+          title="Add Expense"
           onPress={handleSave}
           disabled={!amount}
-        >
-          <Text style={styles.saveButtonText}>Add Expense</Text>
-        </TouchableOpacity>
+          size="lg"
+          fullWidth
+        />
       </View>
     </SafeAreaView>
   );
@@ -152,50 +152,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: theme.spacing.md,
   },
-  splitOptions: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surfaceContainerHigh,
-    borderRadius: theme.borderRadius.lg,
-    padding: 4,
-  },
-  splitOption: {
-    flex: 1,
-    paddingVertical: theme.spacing.sm,
-    alignItems: 'center',
-    borderRadius: theme.borderRadius.md,
-  },
-  activeSplitOption: {
-    backgroundColor: theme.colors.white,
-    ...theme.shadows.small,
-  },
-  splitOptionText: {
-    fontSize: 13,
-    color: theme.colors.onSurfaceVariant,
-    fontWeight: '500',
-  },
-  activeSplitText: {
-    fontSize: 13,
-    color: theme.colors.primary,
-    fontWeight: '700',
-  },
   footer: {
     padding: theme.spacing.lg,
     borderTopWidth: 1,
     borderTopColor: theme.colors.outlineVariant,
   },
-  saveButton: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.xxl,
-    alignItems: 'center',
-    ...theme.shadows.medium,
-  },
-  disabledButton: {
-    backgroundColor: theme.colors.surfaceContainerHigh,
-  },
-  saveButtonText: {
-    color: theme.colors.white,
-    fontSize: 18,
-    fontWeight: '700',
-  },
 });
+

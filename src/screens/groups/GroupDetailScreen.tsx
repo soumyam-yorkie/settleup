@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Receipt, Users, Plus, Filter } from 'lucide-react-native';
 
+import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { SectionHeader } from '../../components/SectionHeader';
 import { MOCK_EXPENSES, MOCK_USER } from '../../services/mockData';
 import { theme } from '../../utils/theme';
-
 
 export const GroupDetailScreen = ({ route }: any) => {
   const { groupId } = route.params;
@@ -14,7 +16,7 @@ export const GroupDetailScreen = ({ route }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.summaryCard}>
+        <Card variant="elevated" style={styles.summaryCard} padding={theme.spacing.lg}>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>TOTAL EXPENSE</Text>
             <Text style={styles.summaryValue}>$240.00</Text>
@@ -24,21 +26,33 @@ export const GroupDetailScreen = ({ route }: any) => {
             <Text style={styles.summaryLabel}>YOUR BALANCE</Text>
             <Text style={[styles.summaryValue, styles.negativeValue]}>-$20.00</Text>
           </View>
-        </View>
+        </Card>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Plus size={18} color={theme.colors.primary} />
-            <Text style={styles.actionButtonText}>Add Expense</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Users size={18} color={theme.colors.primary} />
-            <Text style={styles.actionButtonText}>Balances</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Filter size={18} color={theme.colors.primary} />
-            <Text style={styles.actionButtonText}>Filter</Text>
-          </TouchableOpacity>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={Plus}
+            title="Add Expense"
+            onPress={() => {}}
+            style={styles.actionButton}
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={Users}
+            title="Balances"
+            onPress={() => {}}
+            style={styles.actionButton}
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={Filter}
+            title="Filter"
+            onPress={() => {}}
+            style={styles.actionButton}
+          />
         </View>
       </View>
 
@@ -46,9 +60,13 @@ export const GroupDetailScreen = ({ route }: any) => {
         data={groupExpenses}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        ListHeaderComponent={<Text style={styles.listTitle}>Expenses</Text>}
+        ListHeaderComponent={<SectionHeader title="Expenses" style={styles.listHeader} />}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.expenseItem}>
+          <Card 
+            style={styles.expenseItem} 
+            padding={theme.spacing.md} 
+            onPress={() => {}}
+          >
             <View style={styles.expenseIcon}>
               <Receipt size={24} color={theme.colors.primary} />
             </View>
@@ -63,9 +81,8 @@ export const GroupDetailScreen = ({ route }: any) => {
               <Text style={[styles.yourPart, item.paidBy === MOCK_USER.id ? styles.partPositive : styles.partNegative]}>
                 {item.paidBy === MOCK_USER.id ? 'you lent $100' : 'you owe $30'}
               </Text>
-
             </View>
-          </TouchableOpacity>
+          </Card>
         )}
       />
     </SafeAreaView>
@@ -86,8 +103,6 @@ const styles = StyleSheet.create({
   summaryCard: {
     flexDirection: 'row',
     backgroundColor: theme.colors.primaryContainer,
-    borderRadius: theme.borderRadius.xxl,
-    padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
   },
   summaryItem: {
@@ -97,7 +112,7 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: 'rgba(255,255,255,0.6)',
+    color: theme.colors.whiteAlpha60,
     letterSpacing: 1,
     marginBottom: 4,
   },
@@ -112,7 +127,7 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     width: 1,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: theme.colors.whiteAlpha15,
     marginHorizontal: theme.spacing.md,
   },
   actionRow: {
@@ -122,38 +137,18 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceContainerLow,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.sm,
     borderRadius: theme.borderRadius.lg,
-    gap: 4,
-  },
-  actionButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.primary,
   },
   listContent: {
     padding: theme.spacing.lg,
   },
-  listTitle: {
-    fontFamily: 'Manrope',
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.primary,
+  listHeader: {
     marginBottom: theme.spacing.md,
   },
   expenseItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.xxl,
     marginBottom: theme.spacing.md,
-    ...theme.shadows.small,
   },
   expenseIcon: {
     width: 48,
@@ -198,3 +193,4 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
   },
 });
+

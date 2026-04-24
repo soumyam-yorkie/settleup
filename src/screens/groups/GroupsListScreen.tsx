@@ -5,8 +5,11 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Menu, Search, Plus, ChevronRight, Scissors, Home, UtensilsCrossed } from 'lucide-react-native';
 
-import { theme } from '../../utils/theme';
+import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { RootStackParamList } from '../../types/navigation';
+import { theme } from '../../utils/theme';
 
 const GROUP_ICONS = [Scissors, Home, UtensilsCrossed];
 
@@ -16,7 +19,11 @@ const MEMBER_AVATARS = [
   'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
 ];
 
-const GROUP_ICON_COLORS = ['#5654A8', '#006C49', '#820024'];
+const GROUP_ICON_COLORS = [
+  theme.colors.primaryLight,
+  theme.colors.secondary,
+  theme.colors.tertiaryContainer,
+];
 
 const MOCK_GROUP_DATA = [
   {
@@ -42,10 +49,12 @@ const MOCK_GROUP_DATA = [
   },
 ];
 
+type GroupTab = 'Active' | 'Settled' | 'Archived';
+
 export const GroupsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [activeTab, setActiveTab] = useState<'Active' | 'Settled' | 'Archived'>('Active');
-  const tabs: ('Active' | 'Settled' | 'Archived')[] = ['Active', 'Settled', 'Archived'];
+  const [activeTab, setActiveTab] = useState<GroupTab>('Active');
+  const tabs: GroupTab[] = ['Active', 'Settled', 'Archived'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,19 +70,12 @@ export const GroupsListScreen = () => {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabBar}>
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <SegmentedControl
+        tabs={tabs}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        style={styles.tabContainer}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {activeTab === 'Active' ? (
@@ -85,10 +87,11 @@ export const GroupsListScreen = () => {
               const isNeutral = group.balance === 0;
 
               return (
-                <TouchableOpacity
+                <Card
                   key={group.id}
                   style={styles.groupCard}
                   onPress={() => navigation.navigate('GroupDetail', { groupId: group.id })}
+                  padding={20}
                 >
                   <View style={styles.groupCardTop}>
                     <View style={[styles.groupIconCircle, { backgroundColor: iconColor + '18' }]}>
@@ -111,7 +114,6 @@ export const GroupsListScreen = () => {
                           </View>
                         )}
                       </View>
-
                     </View>
 
                     <View style={styles.groupCardRight}>
@@ -131,25 +133,29 @@ export const GroupsListScreen = () => {
 
                   <View style={styles.groupCardBottom}>
                     <Text style={styles.lastActivity}>{group.lastActivity}</Text>
-                    <TouchableOpacity style={styles.detailsButton}>
+                    <View style={styles.detailsButton}>
                       <Text style={styles.detailsText}>Details</Text>
                       <ChevronRight size={14} color={theme.colors.primary} />
-                    </TouchableOpacity>
+                    </View>
                   </View>
-                </TouchableOpacity>
+                </Card>
               );
             })}
 
             {/* New Group CTA */}
-            <View style={styles.ctaCard}>
+            <Card variant="flat" style={styles.ctaCard} padding={theme.spacing.lg}>
               <Text style={styles.ctaTitle}>Start a new chapter.</Text>
               <Text style={styles.ctaSubtitle}>
                 Track expenses together{'\n'}effortlessly with a new group.
               </Text>
-              <TouchableOpacity style={styles.ctaButton}>
-                <Text style={styles.ctaButtonText}>New Group</Text>
-              </TouchableOpacity>
-            </View>
+              <Button 
+                title="New Group" 
+                variant="primary" 
+                onPress={() => {}} 
+                style={styles.ctaButton}
+                textStyle={{ color: theme.colors.primary }}
+              />
+            </Card>
           </>
         ) : (
           <View style={styles.emptyState}>
@@ -201,32 +207,9 @@ const styles = StyleSheet.create({
   },
 
   // Tabs
-  tabBar: {
-    flexDirection: 'row',
+  tabContainer: {
     marginHorizontal: theme.spacing.lg,
-    backgroundColor: theme.colors.surfaceContainerHigh,
-    borderRadius: theme.borderRadius.round,
-    padding: 4,
     marginBottom: theme.spacing.lg,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: theme.borderRadius.round,
-  },
-  activeTab: {
-    backgroundColor: theme.colors.white,
-    ...theme.shadows.small,
-  },
-  tabText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.onSurfaceVariant,
-  },
-  activeTabText: {
-    color: theme.colors.onSurface,
-    fontWeight: '700',
   },
 
   scrollContent: {
@@ -236,11 +219,7 @@ const styles = StyleSheet.create({
 
   // Group Cards
   groupCard: {
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    borderRadius: theme.borderRadius.xxl,
-    padding: 20,
     marginBottom: 16,
-    ...theme.shadows.small,
   },
   groupCardTop: {
     flexDirection: 'row',
@@ -341,8 +320,6 @@ const styles = StyleSheet.create({
   // CTA Card
   ctaCard: {
     backgroundColor: theme.colors.primaryContainer,
-    borderRadius: theme.borderRadius.xxl,
-    padding: theme.spacing.lg,
     marginTop: 8,
   },
   ctaTitle: {
@@ -354,21 +331,13 @@ const styles = StyleSheet.create({
   },
   ctaSubtitle: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
+    color: theme.colors.whiteAlpha70,
     lineHeight: 19,
     marginBottom: theme.spacing.md,
   },
   ctaButton: {
     backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.round,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
     alignSelf: 'flex-start',
-  },
-  ctaButtonText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.primary,
   },
 
   // Empty State

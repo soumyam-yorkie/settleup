@@ -48,6 +48,19 @@ export const palette = {
   oweRed: '#BA1A1A',
   owedGreenBg: '#6CF8BB',
   oweRedBg: '#FFDAD6',
+  
+  inactive: '#94A3B8',
+  activeTab: '#F1F5F9',
+  warning: '#F59E0B',
+
+  // Alpha blended colors for overlays/glows
+  whiteAlpha10: 'rgba(255, 255, 255, 0.1)',
+  whiteAlpha15: 'rgba(255, 255, 255, 0.15)',
+  whiteAlpha20: 'rgba(255, 255, 255, 0.2)',
+  whiteAlpha60: 'rgba(255, 255, 255, 0.6)',
+  whiteAlpha70: 'rgba(255, 255, 255, 0.7)',
+  primaryAlpha20: 'rgba(31, 26, 111, 0.2)',
+  primaryAlpha30: 'rgba(31, 26, 111, 0.3)',
 };
 
 export const theme = {
@@ -59,6 +72,9 @@ export const theme = {
     border: palette.outlineVariant,
     success: palette.secondary,
     danger: palette.error,
+    inactive: palette.inactive,
+    activeTab: palette.activeTab,
+    warning: palette.warning,
   },
   spacing: {
     xs: 4,

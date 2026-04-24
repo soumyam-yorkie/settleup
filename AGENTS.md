@@ -100,3 +100,11 @@ src/
 - Test filenames: `ComponentName.test.tsx` / `functionName.test.ts`.
 - Mock external dependencies (navigation, network) in tests — never rely on real data.
 - Run the full test suite before pushing: `npm test`.
+
+---
+
+## Strict Color Usage
+- **NO HARDCODED HEX/RGBA COLORS** are allowed in any file except `src/utils/theme.ts`.
+- All styles MUST use `theme.colors.*`.
+- If a color is missing, add it to `src/utils/theme.ts` first.
+- This applies to all components, screens, and navigation files.

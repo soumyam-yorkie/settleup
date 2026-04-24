@@ -6,10 +6,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bell, ArrowUp, ArrowDown, ShoppingBag, Fuel, Ticket } from 'lucide-react-native';
 
 import { AddExpenseFAB } from '../../components/AddExpenseFAB';
+import { Card } from '../../components/Card';
+import { SectionHeader } from '../../components/SectionHeader';
 import { MOCK_GROUPS, MOCK_EXPENSES, MOCK_USER } from '../../services/mockData';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
-
 
 const GROUP_IMAGES = [
   'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=300&q=80',
@@ -36,7 +37,6 @@ export const DashboardScreen = () => {
               source={{ uri: MOCK_USER.avatarUrl ?? '' }}
               style={styles.avatar}
             />
-
             <Text style={styles.brandName}>SettleUp</Text>
           </View>
           <TouchableOpacity style={styles.notifButton}>
@@ -71,12 +71,11 @@ export const DashboardScreen = () => {
         </View>
 
         {/* Active Groups */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Active Groups</Text>
-          <TouchableOpacity>
-            <Text style={styles.sectionAction}>View All</Text>
-          </TouchableOpacity>
-        </View>
+        <SectionHeader 
+          title="Active Groups" 
+          rightLabel="View All" 
+          onRightPress={() => navigation.navigate('Groups')} 
+        />
 
         <ScrollView
           horizontal
@@ -110,19 +109,19 @@ export const DashboardScreen = () => {
         </ScrollView>
 
         {/* Recent Activity */}
-        <View style={[styles.sectionHeader, { marginTop: theme.spacing.xl }]}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <TouchableOpacity>
-            <Text style={styles.sectionAction}>See Trends</Text>
-          </TouchableOpacity>
-        </View>
+        <SectionHeader 
+          title="Recent Activity" 
+          rightLabel="See Trends" 
+          onRightPress={() => {}} 
+          style={{ marginTop: theme.spacing.xl }}
+        />
 
         {MOCK_EXPENSES.map((expense, index) => {
           const isPaidByMe = expense.paidBy === MOCK_USER.id;
-
           const IconComponent = ACTIVITY_ICONS[index % ACTIVITY_ICONS.length];
+          
           return (
-            <TouchableOpacity key={expense.id} style={styles.activityItem}>
+            <Card key={expense.id} variant="flat" style={styles.activityItem} padding={20}>
               <View style={styles.activityIcon}>
                 <IconComponent size={22} color={theme.colors.primary} />
               </View>
@@ -146,7 +145,7 @@ export const DashboardScreen = () => {
                   {isPaidByMe ? 'OWED TO YOU' : 'YOU OWE'}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </Card>
           );
         })}
 
@@ -216,7 +215,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(31, 26, 111, 0.3)',
+    backgroundColor: theme.colors.primaryAlpha30,
   },
   heroContent: {
     zIndex: 1,
@@ -225,7 +224,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
-    color: 'rgba(255,255,255,0.7)',
+    color: theme.colors.whiteAlpha70,
     marginBottom: 8,
   },
   heroAmount: {
@@ -242,7 +241,7 @@ const styles = StyleSheet.create({
   },
   heroStat: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: theme.colors.whiteAlpha10,
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
   },
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 1.5,
-    color: 'rgba(255,255,255,0.7)',
+    color: theme.colors.whiteAlpha70,
     marginBottom: 6,
   },
   heroStatValueRow: {
@@ -269,25 +268,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 18,
     color: theme.colors.tertiaryFixedDim,
-  },
-
-  // Section Header
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: theme.spacing.lg,
-  },
-  sectionTitle: {
-    fontFamily: 'Manrope',
-    fontWeight: '700',
-    fontSize: 22,
-    color: theme.colors.primary,
-  },
-  sectionAction: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.primary,
   },
 
   // Group Cards (horizontal scroll)
@@ -314,7 +294,7 @@ const styles = StyleSheet.create({
   },
   groupImageOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(31,26,111,0.2)',
+    backgroundColor: theme.colors.primaryAlpha20,
   },
   groupName: {
     fontSize: 13,
@@ -346,9 +326,6 @@ const styles = StyleSheet.create({
 
   // Activity Items
   activityItem: {
-    backgroundColor: theme.colors.surfaceContainerLow,
-    borderRadius: theme.borderRadius.xxl,
-    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,

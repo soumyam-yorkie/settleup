@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { theme } from '../utils/theme';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
+
+import { Card } from './Card';
+import { theme } from '../utils/theme';
 
 interface FriendCardProps {
   name: string;
@@ -15,7 +17,11 @@ export const FriendCard = ({ name, balance, avatarUrl, currency, onPress }: Frie
   const isPositive = balance >= 0;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <Card 
+      style={styles.card} 
+      onPress={onPress} 
+      padding={theme.spacing.md}
+    >
       <View style={styles.avatarContainer}>
         {avatarUrl ? (
           <Image source={{ uri: avatarUrl }} style={styles.avatar} />
@@ -40,7 +46,7 @@ export const FriendCard = ({ name, balance, avatarUrl, currency, onPress }: Frie
       </View>
 
       <ChevronRight size={20} color={theme.colors.outlineVariant} style={styles.chevron} />
-    </TouchableOpacity>
+    </Card>
   );
 };
 
@@ -48,11 +54,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.xxl,
     marginBottom: theme.spacing.sm,
-    ...theme.shadows.small,
   },
   avatarContainer: {
     marginRight: theme.spacing.md,
@@ -106,3 +108,4 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing.xs,
   },
 });
+
