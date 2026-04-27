@@ -123,4 +123,17 @@ export const theme = {
       elevation: 12,
     },
   },
+  typography: {
+    fontFamily: {
+      regular: 'Manrope',
+      bold: 'Manrope', // Fallback to same font for now if bold variant not loaded
+      semiBold: 'Manrope',
+    },
+    weight: {
+      regular: '400',
+      medium: '500',
+      semiBold: '600',
+      bold: '700',
+    },
+  },
 };

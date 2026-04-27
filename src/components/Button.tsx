@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  TouchableOpacity, 
+  Pressable, 
   Text, 
   StyleSheet, 
   ViewStyle, 
@@ -17,7 +17,8 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
   onPress: () => void;
-  title: string;
+  title?: string;
+  children?: React.ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   leftIcon?: LucideIcon;
@@ -29,9 +30,42 @@ interface ButtonProps {
   fullWidth?: boolean;
 }
 
+const VARIANT_STYLES: Record<ButtonVariant, ViewStyle> = {
+  primary: { backgroundColor: theme.colors.primary },
+  secondary: { backgroundColor: theme.colors.surfaceContainerHigh },
+  outline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: theme.colors.primary,
+  },
+  ghost: { backgroundColor: 'transparent' },
+  danger: { backgroundColor: `${theme.colors.danger}15` },
+};
+
+const TEXT_COLORS: Record<ButtonVariant, string> = {
+  primary: theme.colors.white,
+  secondary: theme.colors.onSurface,
+  outline: theme.colors.primary,
+  ghost: theme.colors.primary,
+  danger: theme.colors.danger,
+};
+
+const SIZE_STYLES: Record<ButtonSize, ViewStyle> = {
+  sm: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: theme.borderRadius.md },
+  md: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: theme.borderRadius.round },
+  lg: { paddingVertical: 14, paddingHorizontal: 24, borderRadius: theme.borderRadius.xl },
+};
+
+const ICON_SIZES: Record<ButtonSize, number> = {
+  sm: 16,
+  md: 20,
+  lg: 20,
+};
+
 export const Button = ({
   onPress,
   title,
+  children,
   variant = 'primary',
   size = 'md',
   leftIcon: LeftIcon,
@@ -42,87 +76,60 @@ export const Button = ({
   textStyle,
   fullWidth = false,
 }: ButtonProps) => {
-  const getVariantStyle = (): ViewStyle => {
-    switch (variant) {
-      case 'secondary':
-        return { backgroundColor: theme.colors.surfaceContainerHigh };
-      case 'outline':
-        return { 
-          backgroundColor: 'transparent', 
-          borderWidth: 1.5, 
-          borderColor: theme.colors.primary 
-        };
-      case 'ghost':
-        return { backgroundColor: 'transparent' };
-      case 'danger':
-        return { backgroundColor: theme.colors.danger + '15' }; // Light red bg
-      case 'primary':
-      default:
-        return { backgroundColor: theme.colors.primary };
-    }
-  };
-
-  const getTextColor = (): string => {
-    if (disabled) return theme.colors.outline;
-    switch (variant) {
-      case 'secondary':
-        return theme.colors.onSurface;
-      case 'outline':
-        return theme.colors.primary;
-      case 'ghost':
-        return theme.colors.primary;
-      case 'danger':
-        return theme.colors.danger;
-      case 'primary':
-      default:
-        return theme.colors.white;
-    }
-  };
-
-  const getSizeStyle = (): ViewStyle => {
-    switch (size) {
-      case 'sm':
-        return { paddingVertical: 6, paddingHorizontal: 12, borderRadius: theme.borderRadius.md };
-      case 'lg':
-        return { paddingVertical: 14, paddingHorizontal: 24, borderRadius: theme.borderRadius.xl };
-      case 'md':
-      default:
-        return { paddingVertical: 14, paddingHorizontal: 20, borderRadius: theme.borderRadius.round };
-    }
-  };
+  const variantStyle = VARIANT_STYLES[variant];
+  const textColor = disabled ? theme.colors.outline : TEXT_COLORS[variant];
+  const sizeStyle = SIZE_STYLES[size];
+  const iconSize = ICON_SIZES[size];
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={[
+      style={({ pressed }) => [
         styles.button,
-        getVariantStyle(),
-        getSizeStyle(),
-        fullWidth && styles.fullWidth,
+        variantStyle,
+        sizeStyle,
+        fullWidth && { alignSelf: 'stretch' },
+        disabled && styles.disabled,
+        pressed && { opacity: 0.7 },
         style,
-        (disabled || loading) && styles.disabled,
       ]}
-      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityState={{ disabled, busy: loading }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       {loading ? (
-        <ActivityIndicator color={getTextColor()} size="small" />
+        <ActivityIndicator color={textColor} size="small" />
       ) : (
         <View style={styles.content}>
-          {LeftIcon && <LeftIcon size={size === 'sm' ? 16 : 20} color={getTextColor()} style={styles.leftIcon} />}
-          <Text style={[
-            styles.text, 
-            { color: getTextColor() },
-            size === 'sm' && styles.textSm,
-            size === 'lg' && styles.textLg,
-            textStyle
-          ]}>
-            {title}
-          </Text>
-          {RightIcon && <RightIcon size={size === 'sm' ? 16 : 20} color={getTextColor()} style={styles.rightIcon} />}
+          {LeftIcon && (
+            <LeftIcon 
+              size={iconSize} 
+              color={textColor} 
+              style={(title || children) ? styles.leftIcon : undefined} 
+            />
+          )}
+          {children ?? (
+            <Text style={[
+              styles.text, 
+              { color: textColor },
+              size === 'sm' && styles.textSm,
+              size === 'lg' && styles.textLg,
+              textStyle
+            ]}>
+              {title}
+            </Text>
+          )}
+          {RightIcon && (
+            <RightIcon 
+              size={iconSize} 
+              color={textColor} 
+              style={(title || children) ? styles.rightIcon : undefined} 
+            />
+          )}
         </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
@@ -132,17 +139,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fullWidth: {
-    width: '100%',
-  },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    fontFamily: 'Manrope',
-    fontWeight: '700',
+    fontFamily: theme.typography?.fontFamily?.bold ?? 'System',
+    fontWeight: theme.typography?.weight?.bold ?? '700',
     fontSize: 14,
     textAlign: 'center',
   },
