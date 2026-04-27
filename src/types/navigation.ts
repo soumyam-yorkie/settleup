@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
   AddExpense: { groupId?: string; friendId?: string } | undefined;
   AddFriend: undefined;
+  CreateGroup: undefined;
   GroupDetail: { groupId: string };
   Auth: undefined;
 };

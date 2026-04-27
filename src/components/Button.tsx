@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: theme.typography?.fontFamily?.bold ?? 'System',
-    fontWeight: theme.typography?.weight?.bold ?? '700',
+    fontWeight: (theme.typography?.weight?.bold ?? '700') as TextStyle['fontWeight'],
     fontSize: 14,
     textAlign: 'center',
   },

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -11,9 +11,17 @@ import { FriendCard } from '../../components/FriendCard';
 import { MOCK_FRIENDS } from '../../services/mockData';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
+import { PickedContact } from '../../services/contactsService';
+import { ContactPickerModal } from '../../components/ContactPickerModal';
 
 export const FriendsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [isContactModalVisible, setIsContactModalVisible] = useState(false);
+
+  const handleSelectContact = (contact: PickedContact) => {
+    console.log('Picked Contact for Friends List:', contact);
+    // Future: Add to DB/MOCK_FRIENDS
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,8 +46,14 @@ export const FriendsListScreen = () => {
         variant="primary"
         leftIcon={UserPlus}
         title="Add Friend"
-        onPress={() => navigation.navigate('AddFriend')}
+        onPress={() => setIsContactModalVisible(true)}
         style={styles.fab}
+      />
+
+      <ContactPickerModal
+        isVisible={isContactModalVisible}
+        onClose={() => setIsContactModalVisible(false)}
+        onSelect={handleSelectContact}
       />
     </SafeAreaView>
   );

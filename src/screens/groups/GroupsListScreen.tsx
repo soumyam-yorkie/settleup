@@ -55,6 +55,9 @@ export const GroupsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<GroupTab>('Active');
   const tabs: GroupTab[] = ['Active', 'Settled', 'Archived'];
+  const handleNavigate = (route: keyof RootStackParamList) => {
+    navigation.navigate(route as any);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -151,7 +154,7 @@ export const GroupsListScreen = () => {
               <Button 
                 title="New Group" 
                 variant="primary" 
-                onPress={() => {}} 
+                onPress={() => handleNavigate('CreateGroup')} 
                 style={styles.ctaButton}
                 textStyle={{ color: theme.colors.primary }}
               />
@@ -166,14 +169,6 @@ export const GroupsListScreen = () => {
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
-        onPress={() => navigation.navigate('AddExpense')}
-      >
-        <Plus color={theme.colors.white} size={28} />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -349,20 +344,6 @@ const styles = StyleSheet.create({
   emptyStateText: {
     color: theme.colors.onSurfaceVariant,
     fontSize: 16,
-  },
-
-  // FAB
-  fab: {
-    position: 'absolute',
-    bottom: 28,
-    right: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...theme.shadows.fab,
   },
 
   bottomPadding: {

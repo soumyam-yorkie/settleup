@@ -4,6 +4,7 @@ import { MainTabs } from './MainTabs';
 import { AddExpenseScreen } from '../screens/expense/AddExpenseScreen';
 import { AddFriendScreen } from '../screens/friends/AddFriendScreen';
 import { GroupDetailScreen } from '../screens/groups/GroupDetailScreen';
+import { CreateGroupScreen } from '../screens/groups/CreateGroupScreen';
 
 import { RootStackParamList } from '../types/navigation';
 
@@ -22,6 +23,11 @@ export const RootNavigator = () => {
             name="GroupDetail" 
             component={GroupDetailScreen} 
             options={{ headerShown: true, title: 'Group Details' }} 
+          />
+          <Stack.Screen 
+            name="CreateGroup" 
+            component={CreateGroupScreen} 
+            options={{ headerShown: false }} 
           />
 
           <Stack.Group screenOptions={{ presentation: 'modal', headerShown: true, title: 'Add Expense' }}>
