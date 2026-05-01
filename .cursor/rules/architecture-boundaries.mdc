@@ -1,0 +1,13 @@
+---
+description: Enforce architecture boundaries between UI, context, services, and utils
+alwaysApply: true
+---
+
+# Architecture Boundaries
+
+- `screens` and `components` handle rendering and user interaction only.
+- `context` owns shared app state, orchestration, and action APIs for UI layers.
+- `services` own side effects (storage, network, platform I/O); keep them framework-light.
+- `utils` contain pure deterministic logic (calculations, mappers, formatters).
+- Do not access storage or network directly from screens/components.
+- Keep domain contracts centralized in `src/types` and shared across layers.
