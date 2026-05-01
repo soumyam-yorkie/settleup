@@ -32,6 +32,7 @@ import { SegmentedControl } from '../../components/SegmentedControl';
 import { GroupSettingsTab } from './GroupSettingsTab';
 import { MOCK_EXPENSES, MOCK_USER, MOCK_FRIENDS, MOCK_GROUPS } from '../../services/mockData';
 import { theme } from '../../utils/theme';
+import { formatCurrency } from '../../utils/formatters';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
@@ -111,7 +112,8 @@ export const GroupDetailScreen = ({ route }: Props) => {
   const settlementProgress = 65; 
 
   const renderExpenseItem = ({ item }: { item: typeof MOCK_EXPENSES[0] }) => {
-    const Icon = CATEGORY_ICONS[item.description] || CATEGORY_ICONS.Default;
+    // FIX: Using category for icon lookup instead of description
+    const Icon = CATEGORY_ICONS[item.category] || CATEGORY_ICONS.Default;
     const mySplit = item.splits.find(s => s.userId === MOCK_USER.id);
     const isPaidByMe = item.paidBy === MOCK_USER.id;
     const isLent = isPaidByMe;
@@ -137,12 +139,12 @@ export const GroupDetailScreen = ({ route }: Props) => {
         </View>
         
         <View style={styles.expenseAmountContainer}>
-          <Text style={styles.expenseTotalAmount}>${item.amount.toFixed(2)}</Text>
+          <Text style={styles.expenseTotalAmount}>{formatCurrency(item.amount)}</Text>
           <Text style={[
             styles.expenseYourStatus,
             isLent ? styles.statusLent : styles.statusOwe
           ]}>
-            {isLent ? `You lent $${amountToDisplay.toFixed(2)}` : `You owe $${amountToDisplay.toFixed(2)}`}
+            {isLent ? `You lent ${formatCurrency(amountToDisplay)}` : `You owe ${formatCurrency(amountToDisplay)}`}
           </Text>
         </View>
       </Card>
@@ -152,8 +154,6 @@ export const GroupDetailScreen = ({ route }: Props) => {
   const simplifiedDebts = useMemo(() => {
     return simplifyDebts(memberBalances);
   }, [memberBalances]);
-
-
 
   const renderDebtItem = ({ item }: { item: SimplifiedDebt }) => {
     const fromUser = MOCK_FRIENDS.find(f => f.id === item.fromId) || (item.fromId === MOCK_USER.id ? MOCK_USER : { name: 'Unknown', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80' });
@@ -169,7 +169,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
       const accentColor = isFromMe ? theme.colors.danger : theme.colors.secondary;
 
       return (
-        <View style={styles.actionCardWrapper}>
+        <View style={styles.actionCardWrapper} key={`debt-${item.fromId}-${item.toId}`}>
           {/* Gradient Accent Bar */}
           <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
           <View style={styles.actionCardInner}>
@@ -180,7 +180,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
               <Image source={{ uri: (otherUser as any).avatarUrl }} style={styles.actionAvatar} />
               <View style={styles.actionInfo}>
                 <Text style={styles.actionStatusText}>{statusText}</Text>
-                <Text style={[styles.actionAmount, { color: accentColor }]}>${item.amount.toFixed(2)}</Text>
+                <Text style={[styles.actionAmount, { color: accentColor }]}>{formatCurrency(item.amount)}</Text>
               </View>
             </TouchableOpacity>
             
@@ -221,6 +221,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
     // Row for others — with subtle accent bar
     return (
       <TouchableOpacity 
+        key={`debt-${item.fromId}-${item.toId}`}
         style={styles.otherDebtCardWrapper}
         onPress={() => navigation.navigate('FriendDetail' as never, { friendId: fromUser.id } as never)}
       >
@@ -230,7 +231,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
           <Text style={styles.otherDebtText}>
             <Text style={styles.bold}>{fromUser.name.split(' ')[0]}</Text> owes <Text style={styles.bold}>{toUser.name.split(' ')[0]}</Text>
           </Text>
-          <Text style={styles.otherDebtAmount}>${item.amount.toFixed(2)}</Text>
+          <Text style={styles.otherDebtAmount}>{formatCurrency(item.amount)}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -298,7 +299,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
             <View style={styles.balanceItem}>
               <Text style={styles.balanceLabel}>TOTAL GROUP SPEND</Text>
               <Text style={styles.balanceValue}>
-                ${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {formatCurrency(totalSpend)}
               </Text>
             </View>
             <View style={styles.balanceItem}>
@@ -307,25 +308,12 @@ export const GroupDetailScreen = ({ route }: Props) => {
                 styles.balanceValue, 
                 yourBalance >= 0 ? styles.balancePositive : styles.balanceNegative
               ]}>
-                {yourBalance >= 0 ? '+' : '-'}${Math.abs(yourBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {formatCurrency(yourBalance)}
               </Text>
             </View>
           </View>
         </View>
       </Card>
-
-      {/* Settlement Progress (Expenses only) */}
-      {/* {activeTab === 'Expenses' && (
-        <View style={styles.progressSection}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>SETTLEMENT PROGRESS</Text>
-            <Text style={styles.progressPercentage}>{settlementProgress}%</Text>
-          </View>
-          <View style={styles.progressBarBg}>
-            <View style={[styles.progressBarFill, { width: `${settlementProgress}%` }]} />
-          </View>
-        </View>
-      )} */}
 
       {/* Tabs */}
       <View style={{...styles.tabContainer, marginBottom: activeTab === 'Balances' ? theme.spacing.lg : theme.spacing.xl}}>

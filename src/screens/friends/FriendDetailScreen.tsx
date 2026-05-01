@@ -29,6 +29,7 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { MOCK_EXPENSES, MOCK_USER, MOCK_FRIENDS } from '../../services/mockData';
 import { theme } from '../../utils/theme';
+import { formatCurrency } from '../../utils/formatters';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
@@ -63,15 +64,14 @@ export const FriendDetailScreen = ({ route }: Props) => {
   const renderTransactionItem = ({ item }: { item: typeof MOCK_EXPENSES[0] }) => {
     const Icon = CATEGORY_ICONS[item.category || 'Default'] || CATEGORY_ICONS.Default;
     const isPaidByMe = item.paidBy === MOCK_USER.id;
-    const absAmount = Math.abs(item.amount).toFixed(2);
     
     // In friend detail view, we show the split amount for the current context
     const friendSplit = item.splits.find(s => s.userId === friendId);
     const mySplit = item.splits.find(s => s.userId === MOCK_USER.id);
-    const displayAmount = isPaidByMe ? friendSplit?.amount : mySplit?.amount;
+    const amountValue = (isPaidByMe ? friendSplit?.amount : mySplit?.amount) ?? 0;
 
     return (
-      <View style={styles.transactionCard}>
+      <View style={styles.transactionCard} key={item.id}>
         <View style={styles.transactionIconContainer}>
           <Icon size={20} color={theme.colors.primary} />
         </View>
@@ -88,7 +88,7 @@ export const FriendDetailScreen = ({ route }: Props) => {
             styles.transactionAmount,
             isPaidByMe ? styles.amountGreen : styles.amountRed
           ]}>
-            {isPaidByMe ? '+' : '-'} ${displayAmount?.toFixed(2)}
+            {formatCurrency(amountValue)}
           </Text>
           <Text style={styles.transactionStatus}>
             {isPaidByMe ? 'PAID BY YOU' : `PAID BY ${friendInfo?.name.split(' ')[0].toUpperCase()}`}
@@ -134,7 +134,7 @@ export const FriendDetailScreen = ({ route }: Props) => {
           <Text style={[styles.balanceLabel, isOwed ? styles.textGreen : styles.textRed]}>
             {isOwed ? 'OWED TO YOU' : 'YOU OWE'}
           </Text>
-          <Text style={styles.balanceAmount}>${Math.abs(balance).toFixed(2)}</Text>
+          <Text style={styles.balanceAmount}>{formatCurrency(balance)}</Text>
         </View>
 
         {/* Action Buttons */}

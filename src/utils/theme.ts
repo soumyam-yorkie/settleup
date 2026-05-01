@@ -61,6 +61,8 @@ export const palette = {
   whiteAlpha70: 'rgba(255, 255, 255, 0.7)',
   primaryAlpha20: 'rgba(31, 26, 111, 0.2)',
   primaryAlpha30: 'rgba(31, 26, 111, 0.3)',
+  blackAlpha40: 'rgba(0, 0, 0, 0.4)',
+  blackAlpha50: 'rgba(0, 0, 0, 0.5)',
 };
 
 export const theme = {
@@ -75,6 +77,7 @@ export const theme = {
     inactive: palette.inactive,
     activeTab: palette.activeTab,
     warning: palette.warning,
+    overlay: palette.blackAlpha50,
   },
   spacing: {
     xs: 4,

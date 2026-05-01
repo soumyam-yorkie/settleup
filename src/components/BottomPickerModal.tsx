@@ -47,9 +47,9 @@ export function BottomPickerModal<T extends string = string>({
 
   const panResponder = React.useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false, // Allow taps to pass through to FlatList items
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to downward swipes
+        // Capture the touch only if the user is swiping down with a threshold
         return gestureState.dy > 5;
       },
       onPanResponderMove: (_, gestureState) => {
@@ -138,7 +138,6 @@ export function BottomPickerModal<T extends string = string>({
       transparent
       onRequestClose={handleClose}
       statusBarTranslucent
-
     >
       <View style={[styles.container, { height: screenHeight }]}>
         <TouchableWithoutFeedback onPress={handleClose}>
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.5)', // Slightly darker
+    backgroundColor: theme.colors.overlay, 
   },
   sheet: {
     backgroundColor: theme.colors.white,

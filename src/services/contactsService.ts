@@ -29,11 +29,7 @@ export const getAllDeviceContacts = async (): Promise<PickedContact[]> => {
       }
     }
 
-    console.log("Hey there")
-
     const contacts = await Contacts.getAll();
-
-    console.log(contacts, "contactssssss")
 
     // Normalize and filter contacts (only those with names and at least one contact method)
     return contacts

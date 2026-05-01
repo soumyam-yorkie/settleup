@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { GradientCard } from '../../components/GradientCard';
 import { MOCK_FRIENDS, MOCK_USER } from '../../services/mockData';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
+import { formatCurrency } from '../../utils/formatters';
 
 export const FriendsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -18,6 +19,14 @@ export const FriendsListScreen = () => {
   const totalOwed = MOCK_FRIENDS.reduce((acc, f) => f.balance > 0 ? acc + f.balance : acc, 0);
   const totalIOwe = Math.abs(MOCK_FRIENDS.reduce((acc, f) => f.balance < 0 ? acc + f.balance : acc, 0));
   const netBalance = totalOwed - totalIOwe;
+
+  const handleSettleUp = () => {
+    Alert.alert(
+      'Settle Up',
+      'Choose a friend from the list below to settle your balance.',
+      [{ text: 'Got it' }]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -35,7 +44,7 @@ export const FriendsListScreen = () => {
         <GradientCard style={styles.heroCard}>
           <Text style={styles.heroLabel}>TOTAL NET BALANCE</Text>
           <Text style={styles.heroAmount}>
-            {netBalance >= 0 ? '+' : '-'} ${Math.abs(netBalance).toFixed(2)}
+            {formatCurrency(netBalance)}
           </Text>
 
           <View style={styles.heroDivider} />
@@ -45,7 +54,7 @@ export const FriendsListScreen = () => {
               <Text style={styles.heroStatLabel}>Owed to You</Text>
               <View style={styles.statValueRow}>
                 <ArrowUp size={14} color={theme.colors.secondaryContainer} />
-                <Text style={styles.statValueGreen}>${totalOwed.toFixed(2)}</Text>
+                <Text style={styles.statValueGreen}>{formatCurrency(totalOwed)}</Text>
               </View>
             </View>
             <View style={styles.statVerticalDivider} />
@@ -53,7 +62,7 @@ export const FriendsListScreen = () => {
               <Text style={styles.heroStatLabel}>You Owe</Text>
               <View style={styles.statValueRow}>
                 <ArrowDown size={14} color={theme.colors.tertiaryFixedDim} />
-                <Text style={styles.statValueRed}>${totalIOwe.toFixed(2)}</Text>
+                <Text style={styles.statValueRed}>{formatCurrency(totalIOwe)}</Text>
               </View>
             </View>
           </View>
@@ -61,11 +70,19 @@ export const FriendsListScreen = () => {
 
         {/* Action Buttons */}
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('AddFriend')}
+            activeOpacity={0.7}
+          >
             <UserPlus size={20} color={theme.colors.primary} />
             <Text style={styles.actionButtonText}>Add Friend</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={handleSettleUp}
+            activeOpacity={0.7}
+          >
             <Wallet size={20} color={theme.colors.primary} />
             <Text style={styles.actionButtonText}>Settle Up</Text>
           </TouchableOpacity>

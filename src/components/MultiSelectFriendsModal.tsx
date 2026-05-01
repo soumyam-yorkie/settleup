@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -33,6 +33,13 @@ export const MultiSelectFriendsModal = ({
   onConfirm 
 }: MultiSelectFriendsModalProps) => {
   const [currentSelected, setCurrentSelected] = useState<string[]>(selectedIds);
+
+  // Keep internal state in sync with parent when modal opens or parent selection changes
+  useEffect(() => {
+    if (visible) {
+      setCurrentSelected(selectedIds);
+    }
+  }, [visible, selectedIds]);
 
   const toggleFriend = (id: string) => {
     setCurrentSelected(prev => 
@@ -197,5 +204,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 16,
     fontWeight: '800',
+    // Removed dependency on length for translation keys if needed, 
+    // but kept current functionality as it's UI only.
   },
 });

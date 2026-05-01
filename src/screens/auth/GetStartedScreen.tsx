@@ -37,22 +37,22 @@ const ONBOARDING_DATA = [
     id: '1',
     feature: 'Track Shared Expenses',
     icon: BarChart3,
-    iconBg: '#F0F2FF',
-    iconColor: '#535CE8',
+    iconBg: theme.colors.primaryFixed,
+    iconColor: theme.colors.primary,
   },
   {
     id: '2',
     feature: 'Split Bills Fairly',
     icon: Scale,
-    iconBg: '#E8FFF3',
-    iconColor: '#27AE60',
+    iconBg: theme.colors.secondaryContainer,
+    iconColor: theme.colors.secondary,
   },
   {
     id: '3',
     feature: 'Settle Debts Instantly',
     icon: FileText,
-    iconBg: '#FFF0F0',
-    iconColor: '#EB5757',
+    iconBg: theme.colors.errorContainer,
+    iconColor: theme.colors.error,
   },
 ];
 
@@ -199,7 +199,7 @@ export const GetStartedScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC', 
+    backgroundColor: theme.colors.surface, 
   },
   header: {
     alignItems: 'center',
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 40,
-    backgroundColor: '#1E293B',
+    backgroundColor: theme.colors.primary,
     overflow: 'visible',
     position: 'relative',
     ...theme.shadows.large,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -10,
     right: -20,
-    backgroundColor: '#7CFFAF', 
+    backgroundColor: theme.colors.secondaryContainer, 
     width: 110,
     height: 110,
     borderRadius: 24,
