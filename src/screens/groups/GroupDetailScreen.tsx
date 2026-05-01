@@ -173,13 +173,16 @@ export const GroupDetailScreen = ({ route }: Props) => {
           {/* Gradient Accent Bar */}
           <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
           <View style={styles.actionCardInner}>
-            <View style={styles.actionHeader}>
-              <Image source={{ uri: otherUser.avatarUrl }} style={styles.actionAvatar} />
+            <TouchableOpacity 
+              style={styles.actionHeader}
+              onPress={() => navigation.navigate('FriendDetail' as never, { friendId: otherUser.id } as never)}
+            >
+              <Image source={{ uri: (otherUser as any).avatarUrl }} style={styles.actionAvatar} />
               <View style={styles.actionInfo}>
                 <Text style={styles.actionStatusText}>{statusText}</Text>
                 <Text style={[styles.actionAmount, { color: accentColor }]}>${item.amount.toFixed(2)}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
             
             <View style={styles.actionButtonsRow}>
               {isFromMe ? (
@@ -217,16 +220,19 @@ export const GroupDetailScreen = ({ route }: Props) => {
 
     // Row for others — with subtle accent bar
     return (
-      <View style={styles.otherDebtCardWrapper}>
+      <TouchableOpacity 
+        style={styles.otherDebtCardWrapper}
+        onPress={() => navigation.navigate('FriendDetail' as never, { friendId: fromUser.id } as never)}
+      >
         <View style={[styles.accentBarSmall, { backgroundColor: theme.colors.outline }]} />
         <View style={styles.otherDebtInner}>
-          <Image source={{ uri: fromUser.avatarUrl }} style={styles.otherDebtAvatar} />
+          <Image source={{ uri: (fromUser as any).avatarUrl }} style={styles.otherDebtAvatar} />
           <Text style={styles.otherDebtText}>
             <Text style={styles.bold}>{fromUser.name.split(' ')[0]}</Text> owes <Text style={styles.bold}>{toUser.name.split(' ')[0]}</Text>
           </Text>
           <Text style={styles.otherDebtAmount}>${item.amount.toFixed(2)}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

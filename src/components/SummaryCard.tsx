@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { theme } from '../utils/theme';
 import { ArrowUpRight, ArrowDownLeft } from 'lucide-react-native';
+
+import { Card } from './Card';
+import { theme } from '../utils/theme';
+import { formatCurrency } from '../utils/formatters';
 
 interface SummaryCardProps {
   totalBalance: number;
@@ -12,11 +15,14 @@ interface SummaryCardProps {
 
 export const SummaryCard = ({ totalBalance, youOwe, youAreOwed, currency }: SummaryCardProps) => {
   return (
-    <View style={styles.card}>
+    <Card variant="elevated" padding="lg" style={styles.card}>
       <View style={styles.totalContainer}>
         <Text style={styles.label}>Total Balance</Text>
-        <Text style={[styles.balance, { color: totalBalance >= 0 ? theme.colors.success : theme.colors.danger }]}>
-          {totalBalance >= 0 ? '+' : ''}{currency}{Math.abs(totalBalance).toFixed(2)}
+        <Text style={[
+          styles.balance, 
+          { color: totalBalance >= 0 ? theme.colors.success : theme.colors.danger }
+        ]}>
+          {formatCurrency(totalBalance, currency)}
         </Text>
       </View>
       
@@ -29,7 +35,7 @@ export const SummaryCard = ({ totalBalance, youOwe, youAreOwed, currency }: Summ
           </View>
           <View>
             <Text style={styles.statLabel}>You owe</Text>
-            <Text style={styles.statValue}>{currency}{youOwe.toFixed(2)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(youOwe, currency)}</Text>
           </View>
         </View>
         
@@ -40,20 +46,16 @@ export const SummaryCard = ({ totalBalance, youOwe, youAreOwed, currency }: Summ
 
           <View>
             <Text style={styles.statLabel}>You are owed</Text>
-            <Text style={styles.statValue}>{currency}{youAreOwed.toFixed(2)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(youAreOwed, currency)}</Text>
           </View>
         </View>
       </View>
-    </View>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
-    ...theme.shadows.medium,
     marginVertical: theme.spacing.md,
   },
   totalContainer: {
@@ -62,16 +64,16 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: theme.colors.textSecondary,
+    color: theme.colors.outline,
     marginBottom: theme.spacing.xs,
   },
   balance: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   divider: {
     height: 1,
-    backgroundColor: theme.colors.border,
+    backgroundColor: theme.colors.surfaceContainerHigh,
     marginVertical: theme.spacing.md,
   },
   row: {
@@ -89,18 +91,18 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   oweIconContainer: {
-    backgroundColor: theme.colors.oweRedBg,
+    backgroundColor: `${theme.colors.danger}15`,
   },
   owedIconContainer: {
-    backgroundColor: theme.colors.owedGreenBg,
+    backgroundColor: `${theme.colors.success}15`,
   },
   statLabel: {
     fontSize: 12,
-    color: theme.colors.textSecondary,
+    color: theme.colors.outline,
   },
   statValue: {
     fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.text,
+    fontWeight: '700',
+    color: theme.colors.onSurface,
   },
 });

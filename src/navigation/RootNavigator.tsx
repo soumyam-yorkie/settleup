@@ -5,13 +5,18 @@ import { AddExpenseScreen } from '../screens/expense/AddExpenseScreen';
 import { AddFriendScreen } from '../screens/friends/AddFriendScreen';
 import { GroupDetailScreen } from '../screens/groups/GroupDetailScreen';
 import { CreateGroupScreen } from '../screens/groups/CreateGroupScreen';
+import { FriendDetailScreen } from '../screens/friends/FriendDetailScreen';
+
+import { GetStartedScreen } from '../screens/auth/GetStartedScreen';
+import { LoginScreen } from '../screens/auth/LoginScreen';
+import { SignupScreen } from '../screens/auth/SignupScreen';
 
 import { RootStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
-  // For now, we assume the user is authenticated.
+  // Toggle this to false to see the new Auth screens
   const isAuthenticated = true;
 
   return (
@@ -29,6 +34,11 @@ export const RootNavigator = () => {
             component={CreateGroupScreen} 
             options={{ headerShown: false }} 
           />
+          <Stack.Screen 
+            name="FriendDetail" 
+            component={FriendDetailScreen} 
+            options={{ headerShown: false }} 
+          />
 
           <Stack.Group screenOptions={{ presentation: 'modal', headerShown: true, title: 'Add Expense' }}>
             <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
@@ -36,12 +46,14 @@ export const RootNavigator = () => {
           <Stack.Group screenOptions={{ presentation: 'modal', headerShown: true, title: 'Add Friend' }}>
             <Stack.Screen name="AddFriend" component={AddFriendScreen} />
           </Stack.Group>
-
         </Stack.Group>
       ) : (
-        <Stack.Screen name="Auth" component={() => null} />
+        <Stack.Group>
+          <Stack.Screen name="GetStarted" component={GetStartedScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+        </Stack.Group>
       )}
     </Stack.Navigator>
   );
 };
-

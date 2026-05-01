@@ -8,7 +8,10 @@ export type RootStackParamList = {
   AddFriend: undefined;
   CreateGroup: undefined;
   GroupDetail: { groupId: string };
-  Auth: undefined;
+  FriendDetail: { friendId: string };
+  GetStarted: undefined;
+  Login: undefined;
+  Signup: undefined;
 };
 
 export type MainTabParamList = {

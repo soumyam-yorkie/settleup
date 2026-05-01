@@ -4,57 +4,63 @@ import { ChevronRight } from 'lucide-react-native';
 
 import { Card } from './Card';
 import { theme } from '../utils/theme';
+import { formatCurrency, getInitials, getBalanceDetails } from '../utils/formatters';
 
 interface FriendCardProps {
   name: string;
   balance: number;
   avatarUrl?: string;
-  currency: string;
+  subtitle?: string;
   onPress: () => void;
 }
 
-export const FriendCard = ({ name, balance, avatarUrl, currency, onPress }: FriendCardProps) => {
-  const isPositive = balance >= 0;
+export const FriendCard = ({ name, balance, avatarUrl, subtitle, onPress }: FriendCardProps) => {
+  const balanceDetails = getBalanceDetails(balance);
 
   return (
     <Card 
-      style={styles.card} 
       onPress={onPress} 
-      padding={theme.spacing.md}
+      padding="md"
+      variant="outline"
+      style={styles.container}
     >
-      <View style={styles.avatarContainer}>
-        {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.placeholderAvatar]}>
-            <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+      <View style={styles.content}>
+        <View style={styles.avatarContainer}>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.placeholderAvatar]}>
+              <Text style={styles.avatarText}>{getInitials(name)}</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.info}>
+          <Text style={styles.name} numberOfLines={1}>{name}</Text>
+          {subtitle && <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>}
+        </View>
+
+        <View style={styles.rightSection}>
+          <View style={styles.balanceInfo}>
+            <Text style={[styles.balance, { color: theme.colors[balanceDetails.color] }]}>
+              {formatCurrency(balance)}
+            </Text>
+            <Text style={styles.balanceLabel}>{balanceDetails.label}</Text>
           </View>
-        )}
+          <ChevronRight size={18} color={theme.colors.outlineVariant} />
+        </View>
       </View>
-
-      <View style={styles.info}>
-        <Text style={styles.name}>{name}</Text>
-      </View>
-
-      <View style={styles.balanceContainer}>
-        <Text style={styles.balanceLabel}>{balance === 0 ? 'Settled' : isPositive ? 'owes you' : 'you owe'}</Text>
-        {balance !== 0 && (
-          <Text style={[styles.balanceValue, isPositive ? styles.positiveBalance : styles.negativeBalance]}>
-            {currency}{Math.abs(balance).toFixed(2)}
-          </Text>
-        )}
-      </View>
-
-      <ChevronRight size={20} color={theme.colors.outlineVariant} style={styles.chevron} />
     </Card>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
+    marginBottom: theme.spacing.sm,
+  },
+  content: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
   },
   avatarContainer: {
     marginRight: theme.spacing.md,
@@ -65,12 +71,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   placeholderAvatar: {
-    backgroundColor: theme.colors.primaryFixed,
+    backgroundColor: theme.colors.surfaceContainer,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: theme.colors.primary,
   },
@@ -79,33 +85,29 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: theme.colors.onSurface,
   },
-  balanceContainer: {
+  subtitle: {
+    fontSize: 12,
+    color: theme.colors.onSurfaceVariant,
+    marginTop: 2,
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  balanceInfo: {
     alignItems: 'flex-end',
-    marginRight: theme.spacing.sm,
+  },
+  balance: {
+    fontSize: 15,
+    fontWeight: '700',
   },
   balanceLabel: {
     fontSize: 10,
-    color: theme.colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  balanceValue: {
-    fontFamily: 'Manrope',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  positiveBalance: {
-    color: theme.colors.secondary,
-  },
-  negativeBalance: {
-    color: theme.colors.error,
-  },
-  chevron: {
-    marginLeft: theme.spacing.xs,
+    color: theme.colors.outline,
+    marginTop: 2,
   },
 });
-
