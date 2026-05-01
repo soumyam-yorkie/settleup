@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, StyleProp } from 'react-native';
 
 import { theme } from '../utils/theme';
 
@@ -7,7 +7,7 @@ interface SectionHeaderProps {
   title: string;
   rightLabel?: string;
   onRightPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const SectionHeader = ({
@@ -20,8 +20,14 @@ export const SectionHeader = ({
     <View style={[styles.container, style]}>
       <Text style={styles.title}>{title}</Text>
       {rightLabel && (
-        <TouchableOpacity onPress={onRightPress}>
-          <Text style={styles.rightLabel}>{rightLabel}</Text>
+        <TouchableOpacity 
+          onPress={onRightPress}
+          disabled={!onRightPress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={[styles.rightLabel, !onRightPress && styles.disabledLabel]}>
+            {rightLabel}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -36,7 +42,6 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   title: {
-    fontFamily: 'Manrope',
     fontSize: 18,
     fontWeight: '700',
     color: theme.colors.onSurface,
@@ -45,5 +50,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.primary,
+  },
+  disabledLabel: {
+    color: theme.colors.outlineVariant,
   },
 });

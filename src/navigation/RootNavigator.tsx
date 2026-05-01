@@ -22,7 +22,7 @@ export const RootNavigator = () => {
           <Stack.Screen 
             name="GroupDetail" 
             component={GroupDetailScreen} 
-            options={{ headerShown: true, title: 'Group Details' }} 
+            options={{ headerShown: false }} 
           />
           <Stack.Screen 
             name="CreateGroup" 
