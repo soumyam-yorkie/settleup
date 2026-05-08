@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, StyleProp, Pressable } from 'react-native';
 
 import { theme } from '../utils/theme';
 
@@ -7,7 +7,7 @@ interface SegmentedControlProps<T extends string> {
   tabs: T[];
   activeTab: T;
   onChange: (tab: T) => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const SegmentedControl = <T extends string>({
@@ -19,16 +19,19 @@ export const SegmentedControl = <T extends string>({
   return (
     <View style={[styles.container, style]}>
       {tabs.map((tab) => (
-        <TouchableOpacity
+        <Pressable
           key={tab}
-          style={[styles.tab, activeTab === tab && styles.activeTab]}
+          style={({ pressed }) => [
+            styles.tab, 
+            activeTab === tab && styles.activeTab,
+            pressed && styles.pressed
+          ]}
           onPress={() => onChange(tab)}
-          activeOpacity={0.7}
         >
           <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
             {tab}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       ))}
     </View>
   );
@@ -59,5 +62,8 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: theme.colors.onSurface,
     fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.8,
   },
 });

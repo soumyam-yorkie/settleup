@@ -1,52 +1,15 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp, Pressable } from 'react-native';
 
 import { theme } from '../utils/theme';
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   variant?: 'elevated' | 'flat' | 'outline';
   padding?: keyof typeof theme.spacing | number;
 }
-
-export const Card = ({
-  children,
-  style,
-  onPress,
-  variant = 'elevated',
-  padding = 'md',
-}: CardProps) => {
-  const paddingValue = typeof padding === 'string' ? theme.spacing[padding] : padding;
-
-  const containerStyle = [
-    styles.card,
-    variant === 'elevated' && styles.elevated,
-    variant === 'outline' && styles.outline,
-    variant === 'flat' && styles.flat,
-    { padding: paddingValue },
-    style,
-  ];
-
-  if (onPress) {
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.9}
-        style={containerStyle}
-      >
-        {children}
-      </TouchableOpacity>
-    );
-  }
-
-  return (
-    <View style={containerStyle}>
-      {children}
-    </View>
-  );
-};
 
 const styles = StyleSheet.create({
   card: {
@@ -63,4 +26,52 @@ const styles = StyleSheet.create({
   flat: {
     backgroundColor: theme.colors.surfaceContainerLow,
   },
+  pressed: {
+    opacity: 0.85,
+  },
 });
+
+const variantStyles = {
+  elevated: styles.elevated,
+  outline: styles.outline,
+  flat: styles.flat,
+};
+
+export const Card = ({
+  children,
+  style,
+  onPress,
+  variant = 'elevated',
+  padding = 'md',
+}: CardProps) => {
+  const paddingValue = typeof padding === 'string' ? theme.spacing[padding] : padding;
+
+  const containerStyle: StyleProp<ViewStyle> = [
+    styles.card,
+    variantStyles[variant],
+    { padding: paddingValue },
+    style,
+  ];
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          containerStyle,
+          pressed && styles.pressed
+        ]}
+      >
+        {children}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={containerStyle}>
+      {children}
+    </View>
+  );
+};
+
+

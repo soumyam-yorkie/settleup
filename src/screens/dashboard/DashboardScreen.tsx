@@ -23,10 +23,6 @@ const ACTIVITY_ICONS = [ShoppingBag, Fuel, Ticket];
 export const DashboardScreen = () => {
   const navigation = useNavigation<MainScreenNavigationProp>();
 
-  const handleAddExpense = () => {
-    navigation.navigate('AddExpense');
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -100,7 +96,10 @@ export const DashboardScreen = () => {
           ))}
 
           {/* Add Group */}
-          <TouchableOpacity style={styles.groupCard}>
+          <TouchableOpacity 
+            style={styles.groupCard}
+            onPress={() => navigation.navigate('CreateGroup')}
+          >
             <View style={styles.addGroupCard}>
               <Text style={styles.addGroupIcon}>+</Text>
             </View>
@@ -151,7 +150,7 @@ export const DashboardScreen = () => {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
-      <AddExpenseFAB onPress={handleAddExpense} />
+      <AddExpenseFAB />
     </SafeAreaView>
   );
 };

@@ -1,7 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { theme } from '../utils/theme';
+import { View, Text, StyleSheet } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
+
+import { Card } from './Card';
+import { theme } from '../utils/theme';
+import { formatCurrency, getInitials, getBalanceDetails } from '../utils/formatters';
 
 interface GroupCardProps {
   name: string;
@@ -12,13 +15,25 @@ interface GroupCardProps {
   onPress: () => void;
 }
 
-export const GroupCard = ({ name, category, membersCount, balance, currency, onPress }: GroupCardProps) => {
-  const isPositive = balance >= 0;
+export const GroupCard = ({ 
+  name, 
+  category, 
+  membersCount, 
+  balance, 
+  currency, 
+  onPress 
+}: GroupCardProps) => {
+  const balanceDetails = getBalanceDetails(balance);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <Card 
+      onPress={onPress} 
+      variant="elevated" 
+      padding="md"
+      style={styles.container}
+    >
       <View style={styles.iconContainer}>
-        <Text style={styles.iconText}>{name.charAt(0).toUpperCase()}</Text>
+        <Text style={styles.iconText}>{getInitials(name)}</Text>
       </View>
 
       <View style={styles.info}>
@@ -27,26 +42,25 @@ export const GroupCard = ({ name, category, membersCount, balance, currency, onP
       </View>
 
       <View style={styles.balanceContainer}>
-        <Text style={styles.balanceLabel}>{isPositive ? 'You are owed' : 'You owe'}</Text>
-        <Text style={[styles.balanceValue, isPositive ? styles.positiveBalance : styles.negativeBalance]}>
-          {currency}{Math.abs(balance).toFixed(2)}
+        <Text style={styles.balanceLabel}>{balanceDetails.label}</Text>
+        <Text style={[
+          styles.balanceValue, 
+          { color: theme.colors[balanceDetails.color] }
+        ]}>
+          {formatCurrency(balance, currency)}
         </Text>
       </View>
 
       <ChevronRight size={20} color={theme.colors.outlineVariant} style={styles.chevron} />
-    </TouchableOpacity>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceContainerLowest,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.xxl,
     marginBottom: theme.spacing.sm,
-    ...theme.shadows.small,
   },
   iconContainer: {
     width: 50,
@@ -87,15 +101,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   balanceValue: {
-    fontFamily: 'Manrope',
     fontSize: 14,
     fontWeight: '700',
-  },
-  positiveBalance: {
-    color: theme.colors.secondary,
-  },
-  negativeBalance: {
-    color: theme.colors.error,
   },
   chevron: {
     marginLeft: theme.spacing.xs,

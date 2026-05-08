@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string;
+  handle?: string;
   defaultCurrency: string;
 }
 
@@ -24,6 +25,8 @@ export interface Expense {
   paidBy: string; // User ID
   splitType: 'Equal' | 'Custom';
   date: string;
+  lastActivity?: string;
+  category?: 'Food' | 'Transport' | 'Shopping' | 'Settlement';
   splits: Split[];
 }
 

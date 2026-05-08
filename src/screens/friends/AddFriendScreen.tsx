@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, Mail, Search } from 'lucide-react-native';
 
@@ -15,6 +15,14 @@ export const AddFriendScreen = ({ navigation }: Props) => {
 
   const handleAdd = () => {
     navigation.goBack();
+  };
+
+  const handleContactsPress = () => {
+    Alert.alert(
+      'Contact Picker',
+      'This feature will allow you to pick friends from your phone contacts in the next update.',
+      [{ text: 'OK' }]
+    );
   };
 
   return (
@@ -50,7 +58,11 @@ export const AddFriendScreen = ({ navigation }: Props) => {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.searchSection}>
+        <TouchableOpacity 
+          style={styles.searchSection}
+          onPress={handleContactsPress}
+          activeOpacity={0.7}
+        >
           <Search size={20} color={theme.colors.primary} />
           <Text style={styles.searchText}>Find from contacts</Text>
         </TouchableOpacity>
@@ -81,7 +93,6 @@ const styles = StyleSheet.create({
     marginVertical: theme.spacing.xl,
   },
   title: {
-    fontFamily: 'Manrope',
     fontSize: 24,
     fontWeight: '700',
     color: theme.colors.onSurface,

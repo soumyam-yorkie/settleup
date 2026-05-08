@@ -10,6 +10,7 @@ import { Card } from '../../components/Card';
 import { SegmentedControl } from '../../components/SegmentedControl';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
+import { formatCurrency, getBalanceDetails } from '../../utils/formatters';
 
 const GROUP_ICONS = [Scissors, Home, UtensilsCrossed];
 
@@ -55,6 +56,9 @@ export const GroupsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<GroupTab>('Active');
   const tabs: GroupTab[] = ['Active', 'Settled', 'Archived'];
+  const handleNavigate = (route: keyof RootStackParamList) => {
+    navigation.navigate(route as any);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -83,8 +87,7 @@ export const GroupsListScreen = () => {
             {MOCK_GROUP_DATA.map((group, index) => {
               const IconComponent = GROUP_ICONS[index % GROUP_ICONS.length];
               const iconColor = GROUP_ICON_COLORS[index % GROUP_ICON_COLORS.length];
-              const isPositive = group.balance > 0;
-              const isNeutral = group.balance === 0;
+              const balanceDetails = getBalanceDetails(group.balance);
 
               return (
                 <Card
@@ -118,16 +121,12 @@ export const GroupsListScreen = () => {
 
                     <View style={styles.groupCardRight}>
                       <Text style={styles.statusLabel}>STATUS</Text>
-                      {isNeutral ? (
-                        <Text style={styles.statusNeutral}>n</Text>
-                      ) : (
-                        <Text style={[
-                          styles.statusAmount,
-                          isPositive ? styles.statusPositive : styles.statusNegative,
-                        ]}>
-                          {isPositive ? '+' : '-'}${Math.abs(group.balance).toFixed(2)}
-                        </Text>
-                      )}
+                      <Text style={[
+                        styles.statusAmount,
+                        { color: theme.colors[balanceDetails.color] }
+                      ]}>
+                        {group.balance === 0 ? balanceDetails.label : formatCurrency(group.balance)}
+                      </Text>
                     </View>
                   </View>
 
@@ -151,7 +150,7 @@ export const GroupsListScreen = () => {
               <Button 
                 title="New Group" 
                 variant="primary" 
-                onPress={() => {}} 
+                onPress={() => handleNavigate('CreateGroup')} 
                 style={styles.ctaButton}
                 textStyle={{ color: theme.colors.primary }}
               />
@@ -166,14 +165,6 @@ export const GroupsListScreen = () => {
         <View style={styles.bottomPadding} />
       </ScrollView>
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
-        onPress={() => navigation.navigate('AddExpense')}
-      >
-        <Plus color={theme.colors.white} size={28} />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -200,7 +191,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontFamily: 'Manrope',
     fontWeight: '700',
     fontSize: 20,
     color: theme.colors.onSurface,
@@ -278,19 +268,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statusAmount: {
-    fontFamily: 'Manrope',
     fontWeight: '700',
-    fontSize: 16,
-  },
-  statusPositive: {
-    color: theme.colors.secondary,
-  },
-  statusNegative: {
-    color: theme.colors.error,
-  },
-  statusNeutral: {
-    color: theme.colors.onSurfaceVariant,
-    fontSize: 14,
+    fontSize: 14, // Adjusted for full text labels like "Settled"
   },
 
   groupCardBottom: {
@@ -323,7 +302,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   ctaTitle: {
-    fontFamily: 'Manrope',
     fontWeight: '700',
     fontSize: 20,
     color: theme.colors.white,
@@ -349,20 +327,6 @@ const styles = StyleSheet.create({
   emptyStateText: {
     color: theme.colors.onSurfaceVariant,
     fontSize: 16,
-  },
-
-  // FAB
-  fab: {
-    position: 'absolute',
-    bottom: 28,
-    right: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...theme.shadows.fab,
   },
 
   bottomPadding: {
