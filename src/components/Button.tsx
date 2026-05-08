@@ -91,7 +91,7 @@ export const Button = ({
         sizeStyle,
         fullWidth && { alignSelf: 'stretch' },
         disabled && styles.disabled,
-        pressed && { opacity: 0.7 },
+        pressed && !disabled && { opacity: 0.7 },
         style,
       ]}
       accessibilityRole="button"
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: theme.typography?.fontFamily?.bold ?? 'System',
-    fontWeight: theme.typography?.weight?.bold ?? '700',
+    fontWeight: (theme.typography?.weight?.bold ?? '700') as TextStyle['fontWeight'],
     fontSize: 14,
     textAlign: 'center',
   },
@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   disabled: {
-    opacity: 0.5,
+    backgroundColor: theme.colors.surfaceContainerHigh,
+    borderColor: theme.colors.surfaceContainerHigh,
   },
 });
