@@ -256,7 +256,7 @@ export const CreateGroupScreen = () => {
           </View>
 
           {/* Bottom Padding for floating button */}
-          <View style={{ height: 100 }} />
+          <View style={styles.bottomSpacer} />
         </ScrollView>
 
         {/* Footer Button */}
@@ -556,5 +556,8 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 16,
     fontWeight: '700',
+  },
+  bottomSpacer: {
+    height: 100,
   },
 });

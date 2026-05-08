@@ -6,11 +6,8 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  Alert,
-  Modal,
   TextInput,
   Platform,
-  Dimensions,
 } from 'react-native';
 
 import {
@@ -24,8 +21,6 @@ import {
   Tag,
   DollarSign,
   ShieldCheck,
-  X,
-  Check,
   Plane,
   Home,
   Briefcase,
@@ -241,7 +236,7 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
           />
         </View>
 
-        <View style={{ height: 100 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* ── Modals ── */}
@@ -443,5 +438,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.onSurface,
     backgroundColor: theme.colors.surfaceContainerLowest,
+  },
+  bottomSpacer: {
+    height: 100,
   },
 });

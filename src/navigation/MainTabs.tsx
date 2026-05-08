@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Users, User, Settings, ReceiptText } from 'lucide-react-native';
+import { Users, User, Settings, ReceiptText, LucideIcon } from 'lucide-react-native';
 import { DashboardScreen } from '../screens/dashboard/DashboardScreen';
 import { GroupsListScreen } from '../screens/groups/GroupsListScreen';
 import { FriendsListScreen } from '../screens/friends/FriendsListScreen';
@@ -15,7 +15,7 @@ const TabIcon = ({
   label, 
   focused 
 }: { 
-  Icon: any; 
+  Icon: LucideIcon; 
   label: string; 
   focused: boolean 
 }) => {
@@ -65,7 +65,7 @@ export const MainTabs = () => {
           <Pressable 
             {...props} 
             android_ripple={null}
-            style={({ pressed }) => [
+            style={({ pressed: _pressed }) => [
               props.style,
             ]}
           />

@@ -3,7 +3,6 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  FlatList, 
   TouchableOpacity, 
   Image, 
   StatusBar,
@@ -25,8 +24,6 @@ import {
   Clock
 } from 'lucide-react-native';
 
-import { Button } from '../../components/Button';
-import { Card } from '../../components/Card';
 import { MOCK_EXPENSES, MOCK_USER, MOCK_FRIENDS } from '../../services/mockData';
 import { theme } from '../../utils/theme';
 import { formatCurrency } from '../../utils/formatters';
@@ -177,7 +174,7 @@ export const FriendDetailScreen = ({ route }: Props) => {
           </View>
         </View>
         
-        <View style={{ height: 40 }} />
+        <View style={styles.bottomPadding} />
       </ScrollView>
 
       {/* FAB */}
@@ -438,5 +435,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...theme.shadows.fab,
+  },
+  bottomPadding: {
+    height: 40,
   },
 });

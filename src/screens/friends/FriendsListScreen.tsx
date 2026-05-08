@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserPlus, Search, Wallet, ArrowUp, ArrowDown } from 'lucide-react-native';
 
-import { Button } from '../../components/Button';
 import { FriendCard } from '../../components/FriendCard';
 import { GradientCard } from '../../components/GradientCard';
 import { MOCK_FRIENDS, MOCK_USER } from '../../services/mockData';

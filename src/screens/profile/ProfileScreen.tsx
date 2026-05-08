@@ -26,12 +26,15 @@ import {
   ChevronDown
 } from 'lucide-react-native';
 
+import { LucideIcon } from 'lucide-react-native';
+
 import { BottomPickerModal } from '../../components/BottomPickerModal';
 import { MOCK_USER } from '../../services/mockData';
 import { theme } from '../../utils/theme';
+import { MainScreenNavigationProp } from '../../types/navigation';
 
 interface SettingItemProps {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   subtext?: string;
   type?: 'toggle' | 'navigate';
@@ -89,7 +92,11 @@ const SettingItem = ({
   </TouchableOpacity>
 );
 
-export const ProfileScreen = ({ navigation }: any) => {
+type ProfileScreenProps = {
+  navigation: MainScreenNavigationProp;
+};
+
+export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
   const [expenseAlerts, setExpenseAlerts] = useState(true);
   const [reminders, setReminders] = useState(false);
   const [currency, setCurrency] = useState('USD');
@@ -211,7 +218,7 @@ export const ProfileScreen = ({ navigation }: any) => {
           <Text style={styles.logoutText}>Logout from Eleanor's Device</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 120 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Modals */}
@@ -268,8 +275,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
   },
   headerButton: {
     width: 40,
@@ -283,8 +290,8 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.sm,
   },
   heroSection: {
     alignItems: 'center',
@@ -444,5 +451,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: theme.colors.danger,
+  },
+  bottomSpacer: {
+    height: 120,
   },
 });
