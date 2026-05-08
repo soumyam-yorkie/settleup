@@ -1,0 +1,16 @@
+---
+description: Define ownership for each src folder in this React Native project
+alwaysApply: true
+---
+
+# Folder Usage
+
+- `src/components`: reusable, presentation-focused UI blocks used by multiple screens.
+- `src/screens`: route-level screens and screen composition.
+- `src/navigation`: route names, navigator setup, and navigation helpers.
+- `src/context`: React context providers, reducers/state, and exposed hooks.
+- `src/services`: storage adapters, API clients, and side-effectful business operations.
+- `src/types`: shared app/domain types and interfaces.
+- `src/utils`: pure helper functions with no side effects.
+
+If code does not clearly belong to one folder, default to the layer that reduces coupling.

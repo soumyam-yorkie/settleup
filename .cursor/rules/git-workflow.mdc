@@ -1,0 +1,13 @@
+---
+description: Git workflow and commit conventions for consistent project history
+alwaysApply: true
+---
+
+# Git Workflow
+
+- Keep commits focused on one logical change; avoid mixing unrelated edits.
+- Use conventional prefixes: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`.
+- Write commit titles as one concise line in imperative mood.
+- Include a short body when context is needed: why the change exists and impact.
+- Run relevant checks before commit (`lint`, `test`, or targeted validation).
+- Do not rewrite shared history unless explicitly requested.

@@ -1,0 +1,13 @@
+---
+description: Testing expectations for utility, state, and feature changes
+alwaysApply: true
+---
+
+# Testing Standards
+
+- Add or update tests for changed behavior, not only happy paths.
+- Prioritize tests for `utils` and state logic (`context`) before UI snapshot-heavy tests.
+- Keep tests readable: arrange, act, assert; use clear scenario names.
+- Mock side effects at boundaries (`services`) instead of deep internals.
+- For bug fixes, include at least one test that would have caught the bug.
+- If no automated test is added, document a short manual verification checklist.
