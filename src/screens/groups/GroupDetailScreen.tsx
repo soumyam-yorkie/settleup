@@ -8,7 +8,6 @@ import {
   TouchableOpacity, 
   Image, 
   StatusBar,
-  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -17,7 +16,6 @@ import {
   MoreVertical, 
   Receipt, 
   Plus, 
-  Wallet,
   Plane,
   Utensils,
   Car,
@@ -108,8 +106,6 @@ export const GroupDetailScreen = ({ route }: Props) => {
     return { totalSpend: spend, yourBalance: balance };
   }, [groupExpenses]);
 
-  // Mock settlement progress for UI demonstration
-  const settlementProgress = 65; 
 
   const renderExpenseItem = ({ item }: { item: typeof MOCK_EXPENSES[0] }) => {
     // FIX: Using category for icon lookup instead of description
@@ -316,7 +312,10 @@ export const GroupDetailScreen = ({ route }: Props) => {
       </Card>
 
       {/* Tabs */}
-      <View style={{...styles.tabContainer, marginBottom: activeTab === 'Balances' ? theme.spacing.lg : theme.spacing.xl}}>
+      <View style={[
+        styles.tabContainer, 
+        { marginBottom: activeTab === 'Balances' ? theme.spacing.lg : theme.spacing.xl }
+      ]}>
         <SegmentedControl
           tabs={['Expenses', 'Balances', 'Settings']}
           activeTab={activeTab}
@@ -355,7 +354,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
           renderItem={renderExpenseItem}
-          ListFooterComponent={<View style={{ height: 100 }} />}
+          ListFooterComponent={<View style={styles.bottomSpacer} />}
         />
       )}
 
@@ -369,7 +368,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
             contentContainerStyle={styles.listContent}
             renderSectionHeader={renderSectionHeader as any}
             renderItem={({ item }) => renderDebtItem({ item })}
-            ListFooterComponent={<View style={{ height: 100 }} />}
+            ListFooterComponent={<View style={styles.bottomSpacer} />}
             stickySectionHeadersEnabled={false}
           />
         ) : (
@@ -499,9 +498,9 @@ const styles = StyleSheet.create({
   balanceLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: theme.colors.whiteAlpha60,
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   balanceValue: {
     fontSize: 20,
@@ -512,7 +511,7 @@ const styles = StyleSheet.create({
     color: theme.colors.secondaryContainer,
   },
   balanceNegative: {
-    color: '#FFB2B7',
+    color: theme.colors.tertiaryFixedDim,
   },
 
   // Progress Section
@@ -559,7 +558,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: theme.spacing.md,
     backgroundColor: theme.colors.white,
-    borderRadius: 24,
+    borderRadius: theme.borderRadius.xxl,
     borderWidth: 1,
     borderColor: theme.colors.surfaceContainerHigh,
   },
@@ -610,7 +609,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
     padding: theme.spacing.md,
     backgroundColor: theme.colors.surfaceContainerLow,
-    borderRadius: 16,
+    borderRadius: theme.borderRadius.xl,
     borderWidth: 1,
     borderColor: theme.colors.outlineVariant,
   },
@@ -632,7 +631,7 @@ const styles = StyleSheet.create({
   actionCardWrapper: {
     flexDirection: 'row',
     marginBottom: theme.spacing.lg,
-    borderRadius: 24,
+    borderRadius: theme.borderRadius.xxl,
     overflow: 'hidden',
     backgroundColor: theme.colors.white,
     borderWidth: 1,
@@ -683,7 +682,7 @@ const styles = StyleSheet.create({
   otherDebtCardWrapper: {
     flexDirection: 'row',
     marginBottom: theme.spacing.sm,
-    borderRadius: 16,
+    borderRadius: theme.borderRadius.xl,
     overflow: 'hidden',
     backgroundColor: theme.colors.surfaceContainerLow,
   },
@@ -754,5 +753,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...theme.shadows.medium,
+  },
+  bottomSpacer: {
+    height: 100,
   },
 });

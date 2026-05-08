@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Menu, Search, Plus, ChevronRight, Scissors, Home, UtensilsCrossed } from 'lucide-react-native';
+import { Menu, Search, ChevronRight, Scissors, Home, UtensilsCrossed } from 'lucide-react-native';
 
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';

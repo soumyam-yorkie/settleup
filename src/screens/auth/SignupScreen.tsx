@@ -9,17 +9,20 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, LogIn, UserPlus } from 'lucide-react-native';
+import { ArrowLeft } from 'lucide-react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../../utils/theme';
 import { Button } from '../../components/Button';
 import { AuthInput } from '../../components/AuthInput';
+import { RootStackParamList } from '../../types/navigation';
 
-const { width } = Dimensions.get('window');
+type SignupScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'Signup'>;
+};
 
-export const SignupScreen = ({ navigation }: any) => {
+export const SignupScreen = ({ navigation }: SignupScreenProps) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +42,7 @@ export const SignupScreen = ({ navigation }: any) => {
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
         <ScrollView 
           contentContainerStyle={styles.scrollContent} 
@@ -56,7 +59,7 @@ export const SignupScreen = ({ navigation }: any) => {
                 placeholder="Julianne Moore"
                 value={fullName}
                 onChangeText={setFullName}
-                placeholderTextColor="#E2E8F0"
+                placeholderTextColor={theme.colors.outlineVariant}
               />
               
               <AuthInput 
@@ -66,7 +69,7 @@ export const SignupScreen = ({ navigation }: any) => {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                placeholderTextColor="#E2E8F0"
+                placeholderTextColor={theme.colors.outlineVariant}
               />
               
               <AuthInput 
@@ -75,7 +78,7 @@ export const SignupScreen = ({ navigation }: any) => {
                 value={password}
                 onChangeText={setPassword}
                 isPassword
-                placeholderTextColor="#E2E8F0"
+                placeholderTextColor={theme.colors.outlineVariant}
               />
 
               <View style={styles.agreeRow}>
@@ -140,11 +143,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.surface,
   },
+  keyboardView: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
   },
   backBtn: {
     padding: 8,
@@ -157,7 +163,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.md,
     paddingBottom: 140, // Space for floating bottom tabs
   },
   card: {
@@ -193,9 +199,9 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: theme.borderRadius.sm,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: theme.colors.surfaceContainerHighest,
     marginTop: 2,
   },
   checkboxChecked: {
@@ -214,7 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   createBtn: {
-    borderRadius: 24,
+    borderRadius: theme.borderRadius.xxl,
     height: 60,
     ...theme.shadows.medium,
   },

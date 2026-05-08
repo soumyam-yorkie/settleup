@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bell, ArrowUp, ArrowDown, ShoppingBag, Fuel, Ticket } from 'lucide-react-native';
 
 import { AddExpenseFAB } from '../../components/AddExpenseFAB';

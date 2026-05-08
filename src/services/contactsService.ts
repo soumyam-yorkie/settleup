@@ -35,7 +35,7 @@ export const getAllDeviceContacts = async (): Promise<PickedContact[]> => {
     return contacts
       .filter(c => c.displayName || c.givenName)
       .map(c => {
-        let phoneOrEmail = undefined;
+        let phoneOrEmail;
         if (c.phoneNumbers && c.phoneNumbers.length > 0) {
           phoneOrEmail = c.phoneNumbers[0].number;
         } else if (c.emailAddresses && c.emailAddresses.length > 0) {

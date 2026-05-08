@@ -12,12 +12,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, ArrowRight } from 'lucide-react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppLogo } from '../../components/AppLogo';
 import { theme } from '../../utils/theme';
 import { Button } from '../../components/Button';
 import { AuthInput } from '../../components/AuthInput';
+import { RootStackParamList } from '../../types/navigation';
 
-export const LoginScreen = ({ navigation }: any) => {
+type LoginScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'Login'>;
+};
+
+export const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -26,7 +32,7 @@ export const LoginScreen = ({ navigation }: any) => {
       <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Header */}
@@ -119,9 +125,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.surface,
   },
+  keyboardView: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl,
   },
   header: {
     flexDirection: 'row',
@@ -172,7 +181,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   loginBtn: {
-    borderRadius: 24,
+    borderRadius: theme.borderRadius.xxl,
     ...theme.shadows.medium,
   },
   socialSection: {

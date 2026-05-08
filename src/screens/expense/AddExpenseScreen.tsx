@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
-  X,
   User,
   Users,
   Calendar as CalendarIcon,
@@ -117,7 +116,9 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
       const count = activeParticipants.length;
       const equalPart = count > 0 ? (total / count).toFixed(2) : '0.00';
       const initial: Record<string, string> = {};
-      activeParticipants.forEach(p => initial[p.id] = equalPart);
+      activeParticipants.forEach(p => {
+        initial[p.id] = equalPart;
+      });
       setCustomAmounts(initial);
     }
   };
@@ -338,7 +339,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
           )}
         </View>
         
-        <View style={{ height: 100 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Footer */}
@@ -647,5 +648,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white,
     borderTopWidth: 1,
     borderTopColor: theme.colors.surfaceContainerHigh,
+  },
+  bottomSpacer: {
+    height: 100,
   },
 });

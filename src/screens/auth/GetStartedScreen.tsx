@@ -14,25 +14,35 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
-  Wallet, 
   Fingerprint, 
   LogIn, 
   BarChart3, 
   Scale, 
   FileText,
   CheckCircle2,
-  Award
+  Award,
+  LucideIcon
 } from 'lucide-react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppLogo } from '../../components/AppLogo';
 import { theme } from '../../utils/theme';
 import { Button } from '../../components/Button';
+import { RootStackParamList } from '../../types/navigation';
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.6; // Increased width for better presence
 const ITEM_SPACING = 10;
 const SNAP_INTERVAL = ITEM_WIDTH + ITEM_SPACING * 2;
 
-const ONBOARDING_DATA = [
+type OnboardingItem = {
+  id: string;
+  feature: string;
+  icon: LucideIcon;
+  iconBg: string;
+  iconColor: string;
+};
+
+const ONBOARDING_DATA: OnboardingItem[] = [
   {
     id: '1',
     feature: 'Track Shared Expenses',
@@ -56,7 +66,11 @@ const ONBOARDING_DATA = [
   },
 ];
 
-export const GetStartedScreen = ({ navigation }: any) => {
+type GetStartedScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'GetStarted'>;
+};
+
+export const GetStartedScreen = ({ navigation }: GetStartedScreenProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -67,7 +81,7 @@ export const GetStartedScreen = ({ navigation }: any) => {
     }
   };
 
-  const renderItem = ({ item }: any) => {
+  const renderItem = ({ item }: { item: OnboardingItem }) => {
     const Icon = item.icon;
     return (
       <View style={styles.carouselItem}>
@@ -85,7 +99,7 @@ export const GetStartedScreen = ({ navigation }: any) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header Logo */}
         <AppLogo containerStyle={styles.header} />
 
@@ -200,6 +214,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface, 
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     alignItems: 'center',
@@ -350,8 +367,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
   },
   actionsSection: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
   },
   primaryBtn: {
     marginBottom: 16,

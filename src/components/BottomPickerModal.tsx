@@ -105,7 +105,7 @@ export function BottomPickerModal<T extends string = string>({
       panY.setValue(screenHeight);
       overlayOpacity.setValue(0);
     }
-  }, [visible, screenHeight]);
+  }, [visible, screenHeight, overlayOpacity, panY]);
 
   const handleClose = () => {
     Animated.parallel([
