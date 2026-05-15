@@ -4,7 +4,8 @@ import { ChevronRight } from 'lucide-react-native';
 
 import { Card } from './Card';
 import { theme } from '../utils/theme';
-import { formatCurrency, getInitials, getBalanceDetails } from '../utils/formatters';
+import { formatCurrency, getBalanceDetails } from '../utils/formatters';
+import { Avatar } from './Avatar';
 
 interface GroupCardProps {
   name: string;
@@ -12,6 +13,7 @@ interface GroupCardProps {
   membersCount: number;
   balance: number;
   currency: string;
+  avatarUrl?: string;
   onPress: () => void;
 }
 
@@ -21,6 +23,7 @@ export const GroupCard = ({
   membersCount, 
   balance, 
   currency, 
+  avatarUrl,
   onPress 
 }: GroupCardProps) => {
   const balanceDetails = getBalanceDetails(balance);
@@ -33,7 +36,7 @@ export const GroupCard = ({
       style={styles.container}
     >
       <View style={styles.iconContainer}>
-        <Text style={styles.iconText}>{getInitials(name)}</Text>
+        <Avatar uri={avatarUrl} style={styles.avatar} type="group" />
       </View>
 
       <View style={styles.info}>
@@ -63,18 +66,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   iconContainer: {
+    marginRight: theme.spacing.md,
+  },
+  avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: theme.colors.primaryFixed,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: theme.spacing.md,
-  },
-  iconText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.primary,
   },
   info: {
     flex: 1,

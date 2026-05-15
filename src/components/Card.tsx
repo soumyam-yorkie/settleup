@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceContainerLow,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.95,
   },
 });
 

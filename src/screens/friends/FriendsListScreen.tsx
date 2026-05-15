@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,16 +7,46 @@ import { UserPlus, Search, Wallet, ArrowUp, ArrowDown } from 'lucide-react-nativ
 
 import { FriendCard } from '../../components/FriendCard';
 import { GradientCard } from '../../components/GradientCard';
-import { MOCK_FRIENDS, MOCK_USER } from '../../services/mockData';
+import { useAppContext } from '../../context/AppContext';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
 import { formatCurrency } from '../../utils/formatters';
+import { Avatar } from '../../components/Avatar';
 
 export const FriendsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { currentUser, friends, expenses } = useAppContext();
 
-  const totalOwed = MOCK_FRIENDS.reduce((acc, f) => f.balance > 0 ? acc + f.balance : acc, 0);
-  const totalIOwe = Math.abs(MOCK_FRIENDS.reduce((acc, f) => f.balance < 0 ? acc + f.balance : acc, 0));
+  const friendsWithBalances = useMemo(() => {
+    return friends.map(friend => {
+      const friendExpenses = expenses.filter(e => 
+        e.paidBy === friend.id || e.splits.some(s => s.userId === friend.id)
+      );
+      
+      let balance = 0;
+      friendExpenses.forEach(expense => {
+        const isPaidByMe = expense.paidBy === currentUser.id;
+        const isPaidByFriend = expense.paidBy === friend.id;
+        const mySplit = expense.splits.find(s => s.userId === currentUser.id)?.amount || 0;
+        const friendSplit = expense.splits.find(s => s.userId === friend.id)?.amount || 0;
+
+        if (isPaidByMe) {
+          balance += friendSplit;
+        } else if (isPaidByFriend) {
+          balance -= mySplit;
+        }
+      });
+
+      return {
+        ...friend,
+        balance,
+        lastActivityDescription: 'Active', // Placeholder
+      };
+    });
+  }, [friends, expenses, currentUser.id]);
+
+  const totalOwed = friendsWithBalances.reduce((acc, f) => f.balance > 0 ? acc + f.balance : acc, 0);
+  const totalIOwe = Math.abs(friendsWithBalances.reduce((acc, f) => f.balance < 0 ? acc + f.balance : acc, 0));
   const netBalance = totalOwed - totalIOwe;
 
   const handleSettleUp = () => {
@@ -31,7 +61,7 @@ export const FriendsListScreen = () => {
     <SafeAreaView style={styles.container}>
       {/* Custom Header */}
       <View style={styles.header}>
-        <Image source={{ uri: MOCK_USER.avatarUrl }} style={styles.headerAvatar} />
+        <Avatar uri={currentUser.avatarUrl} style={styles.headerAvatar} />
         <Text style={styles.headerTitle}>Friends</Text>
         <TouchableOpacity style={styles.iconButton}>
           <Search size={22} color={theme.colors.onSurface} />
@@ -43,7 +73,7 @@ export const FriendsListScreen = () => {
         <GradientCard style={styles.heroCard}>
           <Text style={styles.heroLabel}>TOTAL NET BALANCE</Text>
           <Text style={styles.heroAmount}>
-            {formatCurrency(netBalance)}
+            {formatCurrency(netBalance, currentUser.defaultCurrency)}
           </Text>
 
           <View style={styles.heroDivider} />
@@ -53,7 +83,7 @@ export const FriendsListScreen = () => {
               <Text style={styles.heroStatLabel}>Owed to You</Text>
               <View style={styles.statValueRow}>
                 <ArrowUp size={14} color={theme.colors.secondaryContainer} />
-                <Text style={styles.statValueGreen}>{formatCurrency(totalOwed)}</Text>
+                <Text style={styles.statValueGreen}>{formatCurrency(totalOwed, currentUser.defaultCurrency)}</Text>
               </View>
             </View>
             <View style={styles.statVerticalDivider} />
@@ -61,7 +91,7 @@ export const FriendsListScreen = () => {
               <Text style={styles.heroStatLabel}>You Owe</Text>
               <View style={styles.statValueRow}>
                 <ArrowDown size={14} color={theme.colors.tertiaryFixedDim} />
-                <Text style={styles.statValueRed}>{formatCurrency(totalIOwe)}</Text>
+                <Text style={styles.statValueRed}>{formatCurrency(totalIOwe, currentUser.defaultCurrency)}</Text>
               </View>
             </View>
           </View>
@@ -95,7 +125,7 @@ export const FriendsListScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {MOCK_FRIENDS.map((friend) => (
+        {friendsWithBalances.map((friend) => (
           <FriendCard
             key={friend.id}
             name={friend.name}

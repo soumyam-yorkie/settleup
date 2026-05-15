@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 
 import { Card } from './Card';
 import { theme } from '../utils/theme';
-import { formatCurrency, getInitials, getBalanceDetails } from '../utils/formatters';
+import { formatCurrency, getBalanceDetails } from '../utils/formatters';
+import { Avatar } from './Avatar';
 
 interface FriendCardProps {
   name: string;
@@ -26,13 +27,7 @@ export const FriendCard = ({ name, balance, avatarUrl, subtitle, onPress }: Frie
     >
       <View style={styles.content}>
         <View style={styles.avatarContainer}>
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.placeholderAvatar]}>
-              <Text style={styles.avatarText}>{getInitials(name)}</Text>
-            </View>
-          )}
+          <Avatar uri={avatarUrl} style={styles.avatar} />
         </View>
 
         <View style={styles.info}>
@@ -69,16 +64,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-  },
-  placeholderAvatar: {
-    backgroundColor: theme.colors.surfaceContainer,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.primary,
   },
   info: {
     flex: 1,

@@ -4,11 +4,11 @@ import {
   Text, 
   StyleSheet, 
   ScrollView, 
-  Image, 
   TouchableOpacity, 
   Switch,
   StatusBar
 } from 'react-native';
+import { Avatar } from '../../components/Avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
   Pencil, 
@@ -29,7 +29,7 @@ import {
 import { LucideIcon } from 'lucide-react-native';
 
 import { BottomPickerModal } from '../../components/BottomPickerModal';
-import { MOCK_USER } from '../../services/mockData';
+import { useAppContext } from '../../context/AppContext';
 import { theme } from '../../utils/theme';
 import { MainScreenNavigationProp } from '../../types/navigation';
 
@@ -97,6 +97,7 @@ type ProfileScreenProps = {
 };
 
 export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
+  const { currentUser } = useAppContext();
   const [expenseAlerts, setExpenseAlerts] = useState(true);
   const [reminders, setReminders] = useState(false);
   const [currency, setCurrency] = useState('USD');
@@ -128,17 +129,14 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         {/* Profile Info */}
         <View style={styles.heroSection}>
           <View style={styles.avatarContainer}>
-            <Image 
-              source={{ uri: MOCK_USER.avatarUrl }} 
-              style={styles.avatar} 
-            />
+            <Avatar uri={currentUser.avatarUrl} style={styles.avatar} />
             <TouchableOpacity style={styles.editBadge}>
               <Pencil size={14} color={theme.colors.white} />
             </TouchableOpacity>
           </View>
           
-          <Text style={styles.userName}>{MOCK_USER.name} Vance</Text>
-          <Text style={styles.userEmail}>eleanor.vance@atelier-finance.com</Text>
+          <Text style={styles.userName}>{currentUser.name}</Text>
+          <Text style={styles.userEmail}>{currentUser.email || 'user@example.com'}</Text>
           
           <View style={styles.badgeRow}>
             <View style={styles.badge}>
@@ -215,7 +213,7 @@ export const ProfileScreen = ({ navigation }: ProfileScreenProps) => {
         {/* Logout */}
         <TouchableOpacity style={styles.logoutButton}>
           <LogOut size={20} color={theme.colors.danger} />
-          <Text style={styles.logoutText}>Logout from Eleanor's Device</Text>
+          <Text style={styles.logoutText}>Logout from {currentUser.name.split(' ')[0]}'s Device</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

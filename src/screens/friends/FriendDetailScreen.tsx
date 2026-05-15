@@ -4,7 +4,6 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  Image, 
   StatusBar,
   ScrollView
 } from 'react-native';
@@ -24,9 +23,10 @@ import {
   Clock
 } from 'lucide-react-native';
 
-import { MOCK_EXPENSES, MOCK_USER, MOCK_FRIENDS } from '../../services/mockData';
+import { useAppContext } from '../../context/AppContext';
 import { theme } from '../../utils/theme';
 import { formatCurrency } from '../../utils/formatters';
+import { Avatar } from '../../components/Avatar';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
@@ -43,28 +43,45 @@ const CATEGORY_ICONS: Record<string, any> = {
 export const FriendDetailScreen = ({ route }: Props) => {
   const navigation = useNavigation();
   const { friendId } = route.params;
+  const { currentUser, friends, expenses } = useAppContext();
 
   const friendInfo = useMemo(() => 
-    MOCK_FRIENDS.find(f => f.id === friendId),
-  [friendId]);
+    friends.find(f => f.id === friendId),
+  [friendId, friends]);
 
   const sharedExpenses = useMemo(() => 
-    MOCK_EXPENSES.filter(e => 
+    expenses.filter(e => 
       e.splits.some(s => s.userId === friendId) && 
-      (e.paidBy === MOCK_USER.id || e.paidBy === friendId)
+      (e.paidBy === currentUser.id || e.paidBy === friendId)
     ),
-  [friendId]);
+  [friendId, expenses, currentUser.id]);
 
-  const balance = friendInfo?.balance || 0;
+  const balance = useMemo(() => {
+    let bal = 0;
+    sharedExpenses.forEach(expense => {
+      const isPaidByMe = expense.paidBy === currentUser.id;
+      const isPaidByFriend = expense.paidBy === friendId;
+      const mySplit = expense.splits.find(s => s.userId === currentUser.id)?.amount || 0;
+      const friendSplit = expense.splits.find(s => s.userId === friendId)?.amount || 0;
+
+      if (isPaidByMe) {
+        bal += friendSplit;
+      } else if (isPaidByFriend) {
+        bal -= mySplit;
+      }
+    });
+    return bal;
+  }, [sharedExpenses, currentUser.id, friendId]);
+
   const isOwed = balance > 0;
 
-  const renderTransactionItem = ({ item }: { item: typeof MOCK_EXPENSES[0] }) => {
+  const renderTransactionItem = ({ item }: { item: typeof expenses[0] }) => {
     const Icon = CATEGORY_ICONS[item.category || 'Default'] || CATEGORY_ICONS.Default;
-    const isPaidByMe = item.paidBy === MOCK_USER.id;
+    const isPaidByMe = item.paidBy === currentUser.id;
     
     // In friend detail view, we show the split amount for the current context
     const friendSplit = item.splits.find(s => s.userId === friendId);
-    const mySplit = item.splits.find(s => s.userId === MOCK_USER.id);
+    const mySplit = item.splits.find(s => s.userId === currentUser.id);
     const amountValue = (isPaidByMe ? friendSplit?.amount : mySplit?.amount) ?? 0;
 
     return (
@@ -85,10 +102,10 @@ export const FriendDetailScreen = ({ route }: Props) => {
             styles.transactionAmount,
             isPaidByMe ? styles.amountGreen : styles.amountRed
           ]}>
-            {formatCurrency(amountValue)}
+            {formatCurrency(amountValue, item.currency)}
           </Text>
           <Text style={styles.transactionStatus}>
-            {isPaidByMe ? 'PAID BY YOU' : `PAID BY ${friendInfo?.name.split(' ')[0].toUpperCase()}`}
+            {isPaidByMe ? 'PAID BY YOU' : `PAID BY ${friendInfo?.name.split(' ')[0].toUpperCase() || 'FRIEND'}`}
           </Text>
         </View>
       </View>
@@ -114,10 +131,7 @@ export const FriendDetailScreen = ({ route }: Props) => {
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatarWrapper}>
-            <Image 
-              source={{ uri: friendInfo?.avatarUrl || 'https://via.placeholder.com/150' }} 
-              style={styles.largeAvatar} 
-            />
+            <Avatar uri={friendInfo?.avatarUrl} style={styles.largeAvatar} />
             <View style={styles.verifiedBadge}>
               <CheckCircle2 size={16} color={theme.colors.white} fill={theme.colors.primary} />
             </View>
@@ -131,7 +145,7 @@ export const FriendDetailScreen = ({ route }: Props) => {
           <Text style={[styles.balanceLabel, isOwed ? styles.textGreen : styles.textRed]}>
             {isOwed ? 'OWED TO YOU' : 'YOU OWE'}
           </Text>
-          <Text style={styles.balanceAmount}>{formatCurrency(balance)}</Text>
+          <Text style={styles.balanceAmount}>{formatCurrency(balance, currentUser.defaultCurrency)}</Text>
         </View>
 
         {/* Action Buttons */}

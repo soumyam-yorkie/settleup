@@ -3,12 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   ScrollView,
   TouchableOpacity,
   TextInput,
   Platform,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import {
   Pencil,
@@ -31,16 +31,23 @@ import {
 import { SettingsRow } from '../../components/SettingsRow';
 import { BottomPickerModal } from '../../components/BottomPickerModal';
 import { CustomModal } from '../../components/CustomModal';
+import { ContactPickerModal } from '../../components/ContactPickerModal';
 import { Group } from '../../types/models';
-import { MOCK_USER, MOCK_FRIENDS } from '../../services/mockData';
+import { PickedContact } from '../../services/contactsService';
+import { useAppContext } from '../../context/AppContext';
 import { theme } from '../../utils/theme';
+import { Avatar } from '../../components/Avatar';
 
 interface GroupSettingsTabProps {
   groupInfo: Group;
 }
 
 type GroupCategory = Group['category'];
+type DefaultSplit = NonNullable<Group['defaultSplit']>;
+
 const CATEGORIES: GroupCategory[] = ['Trip', 'Home', 'Office', 'Party', 'Others'];
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD'];
+const DEFAULT_SPLITS: DefaultSplit[] = ['Equal', 'Exact', 'Percentage'];
 
 const CATEGORY_ICONS: Record<GroupCategory, React.ReactNode> = {
   Trip: <Plane size={18} color={theme.colors.primary} />,
@@ -50,73 +57,91 @@ const CATEGORY_ICONS: Record<GroupCategory, React.ReactNode> = {
   Others: <Layout size={18} color={theme.colors.primary} />,
 };
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD'];
-
 export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
+  const navigation = useNavigation();
+  const { currentUser, friends, updateGroup, addMemberToGroup, removeMemberFromGroup, leaveGroup, deleteGroup, addFriend } = useAppContext();
+
   const [simplifyDebts, setSimplifyDebts] = useState(true);
   const [notifications, setNotifications] = useState(true);
-
-  // Editable local state
-  const [groupName, setGroupName] = useState(groupInfo.name);
-  const [category, setCategory] = useState(groupInfo.category);
-  const [currency, setCurrency] = useState(groupInfo.currency);
-
-  // Modal states
-  const [nameModalVisible, setNameModalVisible] = useState(false);
-  const [draftName, setDraftName] = useState(groupName);
-
-  const [removeMemberModalVisible, setRemoveMemberModalVisible] = useState(false);
-  const [memberToRemove, setMemberToRemove] = useState<{ id: string, name: string } | null>(null);
-
-  const [leaveGroupModalVisible, setLeaveGroupModalVisible] = useState(false);
-  const [deleteGroupModalVisible, setDeleteGroupModalVisible] = useState(false);
 
   // Picker states
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const [defaultSplitModalVisible, setDefaultSplitModalVisible] = useState(false);
+
+  // Name edit modal
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [draftName, setDraftName] = useState(groupInfo.name);
+
+  // Member modals
+  const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
+  const [removeMemberModalVisible, setRemoveMemberModalVisible] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
+
+  // Danger zone modals
+  const [leaveGroupModalVisible, setLeaveGroupModalVisible] = useState(false);
+  const [deleteGroupModalVisible, setDeleteGroupModalVisible] = useState(false);
 
   const allMembers = groupInfo.members.map(id => {
-    if (id === MOCK_USER.id) return { ...MOCK_USER, isAdmin: true };
-    const friend = MOCK_FRIENDS.find(f => f.id === id);
+    if (id === currentUser.id) return { ...currentUser, isAdmin: true };
+    const friend = friends.find(f => f.id === id);
     return friend ? { ...friend, isAdmin: false } : null;
-  }).filter(Boolean) as (typeof MOCK_USER & { isAdmin: boolean })[];
+  }).filter(Boolean) as (typeof currentUser & { isAdmin: boolean })[];
 
+  // ── Name ──────────────────────────────────────────────────────────────────
   const handleEditName = () => {
-    setDraftName(groupName);
+    setDraftName(groupInfo.name);
     setNameModalVisible(true);
   };
 
   const handleSaveName = () => {
-    if (draftName.trim()) {
-      setGroupName(draftName.trim());
+    const trimmed = draftName.trim();
+    if (trimmed) {
+      updateGroup(groupInfo.id, { name: trimmed });
     }
     setNameModalVisible(false);
   };
 
-  const handleEditCategory = () => {
-    setCategoryModalVisible(true);
+  // ── Members ───────────────────────────────────────────────────────────────
+  const handleAddContact = (contact: PickedContact) => {
+    // Ensure the contact exists as a friend in context; if not, create a minimal User entry
+    const existingFriend = friends.find(f => f.id === contact.id);
+    if (!existingFriend) {
+      addFriend({
+        id: contact.id,
+        name: contact.name,
+        email: contact.phoneOrEmail ?? '',
+        avatarUrl: contact.avatarUrl,
+        defaultCurrency: 'USD',
+      });
+    }
+    addMemberToGroup(groupInfo.id, contact.id);
   };
 
-  const handleEditCurrency = () => {
-    setCurrencyModalVisible(true);
-  };
-
-  const handleRemoveMember = (member: { id: string, name: string }) => {
+  const handleRemoveMember = (member: { id: string; name: string }) => {
     setMemberToRemove(member);
     setRemoveMemberModalVisible(true);
   };
 
   const confirmRemoveMember = () => {
-    // Logic to remove member
+    if (memberToRemove) {
+      removeMemberFromGroup(groupInfo.id, memberToRemove.id);
+    }
     setRemoveMemberModalVisible(false);
+    setMemberToRemove(null);
   };
 
-  const handleLeaveGroup = () => {
-    setLeaveGroupModalVisible(true);
+  // ── Danger zone ──────────────────────────────────────────────────────────
+  const confirmLeaveGroup = () => {
+    leaveGroup(groupInfo.id);
+    setLeaveGroupModalVisible(false);
+    navigation.goBack();
   };
 
-  const handleDeleteGroup = () => {
-    setDeleteGroupModalVisible(true);
+  const confirmDeleteGroup = () => {
+    deleteGroup(groupInfo.id);
+    setDeleteGroupModalVisible(false);
+    navigation.goBack();
   };
 
   return (
@@ -131,20 +156,20 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
           <SettingsRow
             icon={<Pencil size={16} color={theme.colors.primary} />}
             label="Group Name"
-            rightLabel={groupName}
+            rightLabel={groupInfo.name}
             onPress={handleEditName}
           />
           <SettingsRow
             icon={<Tag size={16} color={theme.colors.primary} />}
             label="Category"
-            rightLabel={category}
-            onPress={handleEditCategory}
+            rightLabel={groupInfo.category}
+            onPress={() => setCategoryModalVisible(true)}
           />
           <SettingsRow
             icon={<DollarSign size={16} color={theme.colors.primary} />}
             label="Currency"
-            rightLabel={currency}
-            onPress={handleEditCurrency}
+            rightLabel={groupInfo.currency}
+            onPress={() => setCurrencyModalVisible(true)}
             isLast
           />
         </View>
@@ -152,7 +177,7 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
         {/* ── Section 2: Members ── */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionHeaderLabel}>MEMBERS</Text>
-          <TouchableOpacity style={styles.addMemberChip} onPress={() => {}}>
+          <TouchableOpacity style={styles.addMemberChip} onPress={() => setAddMemberModalVisible(true)}>
             <UserPlus size={12} color={theme.colors.primary} />
             <Text style={styles.addMemberText}>Add</Text>
           </TouchableOpacity>
@@ -164,10 +189,10 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
               key={member.id}
               style={[styles.memberRow, index < allMembers.length - 1 && styles.memberRowBorder]}
             >
-              <Image source={{ uri: member.avatarUrl ?? '' }} style={styles.memberAvatar} />
+              <Avatar uri={member.avatarUrl} style={styles.memberAvatar} />
               <View style={styles.memberInfo}>
                 <Text style={styles.memberName}>
-                  {member.id === MOCK_USER.id ? 'You' : member.name}
+                  {member.id === currentUser.id ? 'You' : member.name}
                 </Text>
                 {member.isAdmin && (
                   <View style={styles.adminBadge}>
@@ -202,8 +227,8 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
           <SettingsRow
             icon={<SplitSquareHorizontal size={16} color={theme.colors.primary} />}
             label="Default Split"
-            rightLabel="Equal"
-            onPress={() => {}}
+            rightLabel={groupInfo.defaultSplit ?? 'Equal'}
+            onPress={() => setDefaultSplitModalVisible(true)}
           />
           <SettingsRow
             icon={<Bell size={16} color={theme.colors.primary} />}
@@ -224,14 +249,14 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
             label="Leave Group"
             description="You can be re-added later"
             danger
-            onPress={handleLeaveGroup}
+            onPress={() => setLeaveGroupModalVisible(true)}
           />
           <SettingsRow
             icon={<Trash2 size={16} color={theme.colors.danger} />}
             label="Delete Group"
             description="Permanently removes all data"
             danger
-            onPress={handleDeleteGroup}
+            onPress={() => setDeleteGroupModalVisible(true)}
             isLast
           />
         </View>
@@ -279,7 +304,7 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
         title="Leave Group"
         description="Are you sure you want to leave this group? You can be re-added later by an admin."
         onClose={() => setLeaveGroupModalVisible(false)}
-        onConfirm={() => setLeaveGroupModalVisible(false)}
+        onConfirm={confirmLeaveGroup}
         confirmLabel="Leave"
         isDanger
         confirmIcon={<LogOut size={16} color={theme.colors.white} />}
@@ -291,34 +316,51 @@ export const GroupSettingsTab = ({ groupInfo }: GroupSettingsTabProps) => {
         title="Delete Group"
         description="This will permanently delete the group and all its expenses. This action cannot be undone."
         onClose={() => setDeleteGroupModalVisible(false)}
-        onConfirm={() => setDeleteGroupModalVisible(false)}
+        onConfirm={confirmDeleteGroup}
         confirmLabel="Delete"
         isDanger
         confirmIcon={<Trash2 size={16} color={theme.colors.white} />}
       />
 
-      {/* ── Category Picker ── */}
+      {/* Add Member — ContactPickerModal */}
+      <ContactPickerModal
+        isVisible={addMemberModalVisible}
+        onClose={() => setAddMemberModalVisible(false)}
+        onSelect={handleAddContact}
+      />
+
+      {/* Category Picker */}
       <BottomPickerModal<GroupCategory>
         visible={categoryModalVisible}
         title="Select Category"
-        selectedValue={category}
+        selectedValue={groupInfo.category}
         options={CATEGORIES.map(cat => ({ 
           label: cat, 
           value: cat,
           icon: CATEGORY_ICONS[cat]
         }))}
-        onSelect={setCategory}
+        onSelect={(cat) => updateGroup(groupInfo.id, { category: cat })}
         onClose={() => setCategoryModalVisible(false)}
       />
 
-      {/* ── Currency Picker ── */}
+      {/* Currency Picker */}
       <BottomPickerModal
         visible={currencyModalVisible}
         title="Select Currency"
-        selectedValue={currency}
+        selectedValue={groupInfo.currency}
         options={CURRENCIES.map(cur => ({ label: cur, value: cur }))}
-        onSelect={setCurrency}
+        onSelect={(cur) => updateGroup(groupInfo.id, { currency: cur })}
         onClose={() => setCurrencyModalVisible(false)}
+      />
+
+      {/* Default Split Picker */}
+      <BottomPickerModal<DefaultSplit>
+        visible={defaultSplitModalVisible}
+        title="Default Split"
+        selectedValue={groupInfo.defaultSplit ?? 'Equal'}
+        options={DEFAULT_SPLITS.map(s => ({ label: s, value: s }))}
+        onSelect={(split) => updateGroup(groupInfo.id, { defaultSplit: split })}
+        onClose={() => setDefaultSplitModalVisible(false)}
       />
     </>
   );

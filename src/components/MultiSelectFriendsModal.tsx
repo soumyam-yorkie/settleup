@@ -5,11 +5,11 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   ScrollView, 
-  Image,
   Modal
 } from 'react-native';
 import { X, Check } from 'lucide-react-native';
 import { theme } from '../utils/theme';
+import { Avatar } from './Avatar';
 
 interface Friend {
   id: string;
@@ -79,13 +79,7 @@ export const MultiSelectFriendsModal = ({
                   activeOpacity={0.7}
                 >
                   <View style={styles.avatarContainer}>
-                    {friend.avatarUrl ? (
-                      <Image source={{ uri: friend.avatarUrl }} style={styles.avatar} />
-                    ) : (
-                      <View style={[styles.avatar, styles.placeholderAvatar]}>
-                        <Text style={styles.placeholderText}>{friend.name[0]}</Text>
-                      </View>
-                    )}
+                    <Avatar uri={friend.avatarUrl} style={styles.avatar} />
                   </View>
                   <Text style={styles.friendName}>{friend.name}</Text>
                   <View style={[
