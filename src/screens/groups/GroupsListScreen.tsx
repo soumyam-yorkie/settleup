@@ -1,64 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Menu, Search, ChevronRight, Scissors, Home, UtensilsCrossed } from 'lucide-react-native';
+import { Menu, Search, ChevronRight } from 'lucide-react-native';
 
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { SegmentedControl } from '../../components/SegmentedControl';
+import { useAppContext } from '../../context/AppContext';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../utils/theme';
 import { formatCurrency, getBalanceDetails } from '../../utils/formatters';
-
-const GROUP_ICONS = [Scissors, Home, UtensilsCrossed];
-
-const MEMBER_AVATARS = [
-  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80',
-];
-
-const GROUP_ICON_COLORS = [
-  theme.colors.primaryLight,
-  theme.colors.secondary,
-  theme.colors.tertiaryContainer,
-];
-
-const MOCK_GROUP_DATA = [
-  {
-    id: 'g1',
-    name: 'Summer Trip 2024',
-    balance: 120.50,
-    lastActivity: 'Last activity 2h ago',
-    memberCount: 5,
-  },
-  {
-    id: 'g2',
-    name: 'Apartment\nExpenses',
-    balance: -42.00,
-    lastActivity: 'Rent due in 3 days',
-    memberCount: 2,
-  },
-  {
-    id: 'g3',
-    name: 'Weekly Dinner',
-    balance: 0,
-    lastActivity: 'Last dinner last Friday',
-    memberCount: 8,
-  },
-];
+import { Avatar } from '../../components/Avatar';
 
 type GroupTab = 'Active' | 'Settled' | 'Archived';
 
 export const GroupsListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { currentUser, groups, expenses, friends } = useAppContext();
   const [activeTab, setActiveTab] = useState<GroupTab>('Active');
   const tabs: GroupTab[] = ['Active', 'Settled', 'Archived'];
+
   const handleNavigate = (route: keyof RootStackParamList) => {
     navigation.navigate(route as any);
   };
+
+  const groupData = useMemo(() => {
+    return groups.map((group) => {
+      const groupExpenses = expenses.filter(e => e.groupId === group.id);
+      
+      // Calculate balance per currency
+      const balanceByCurrency: Record<string, number> = {};
+      groupExpenses.forEach((expense) => {
+        const cur = expense.currency || group.currency;
+        const mySplit = expense.splits.find(s => s.userId === currentUser.id);
+        const myAmount = mySplit ? mySplit.amount : 0;
+
+        if (expense.paidBy === currentUser.id) {
+          balanceByCurrency[cur] = (balanceByCurrency[cur] || 0) + (expense.amount - myAmount);
+        } else if (mySplit) {
+          balanceByCurrency[cur] = (balanceByCurrency[cur] || 0) - myAmount;
+        }
+      });
+
+      // Primary balance is in the group's current currency
+      const primaryBalance = balanceByCurrency[group.currency] || 0;
+      const hasMultiCurrency = Object.keys(balanceByCurrency).length > 1;
+      
+      return {
+        ...group,
+        balance: primaryBalance,
+        balanceByCurrency,
+        hasMultiCurrency,
+        lastActivity: 'Active',
+        memberCount: group.members.length,
+      };
+    });
+  }, [groups, expenses, currentUser.id]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -84,10 +83,12 @@ export const GroupsListScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {activeTab === 'Active' ? (
           <>
-            {MOCK_GROUP_DATA.map((group, index) => {
-              const IconComponent = GROUP_ICONS[index % GROUP_ICONS.length];
-              const iconColor = GROUP_ICON_COLORS[index % GROUP_ICON_COLORS.length];
+            {groupData.map((group) => {
               const balanceDetails = getBalanceDetails(group.balance);
+
+              const groupMemberAvatars = group.members
+                .map(id => friends.find(f => f.id === id)?.avatarUrl || (id === currentUser.id ? currentUser.avatarUrl : null))
+                .filter(Boolean) as string[];
 
               return (
                 <Card
@@ -95,19 +96,18 @@ export const GroupsListScreen = () => {
                   style={styles.groupCard}
                   onPress={() => navigation.navigate('GroupDetail', { groupId: group.id })}
                   padding={20}
+                  activeOpacity={0.9}
                 >
                   <View style={styles.groupCardTop}>
-                    <View style={[styles.groupIconCircle, { backgroundColor: iconColor + '18' }]}>
-                      <IconComponent size={22} color={iconColor} />
-                    </View>
+                    <Avatar uri={group.avatarUrl} style={styles.groupAvatar} type="group" />
 
                     <View style={styles.groupCardInfo}>
                       <Text style={styles.groupName}>{group.name}</Text>
                       <View style={styles.memberAvatars}>
-                        {MEMBER_AVATARS.slice(0, Math.min(3, group.memberCount)).map((uri, i) => (
-                          <Image
+                        {groupMemberAvatars.slice(0, 3).map((uri, i) => (
+                          <Avatar
                             key={i}
-                            source={{ uri }}
+                            uri={uri}
                             style={[styles.memberAvatar, i > 0 && styles.memberAvatarOverlap]}
                           />
                         ))}
@@ -121,12 +121,26 @@ export const GroupsListScreen = () => {
 
                     <View style={styles.groupCardRight}>
                       <Text style={styles.statusLabel}>STATUS</Text>
-                      <Text style={[
-                        styles.statusAmount,
-                        { color: theme.colors[balanceDetails.color] }
-                      ]}>
-                        {group.balance === 0 ? balanceDetails.label : formatCurrency(group.balance)}
-                      </Text>
+                      {group.balance === 0 && !group.hasMultiCurrency ? (
+                        <Text style={[
+                          styles.statusAmount,
+                          { color: theme.colors[balanceDetails.color] }
+                        ]}>
+                          {balanceDetails.label}
+                        </Text>
+                      ) : (
+                        <>
+                          <Text style={[
+                            styles.statusAmount,
+                            { color: theme.colors[balanceDetails.color] }
+                          ]}>
+                            {formatCurrency(group.balance, group.currency)}
+                          </Text>
+                          {group.hasMultiCurrency && (
+                            <Text style={styles.multiCurrencyHint}>+ other currencies</Text>
+                          )}
+                        </>
+                      )}
                     </View>
                   </View>
 
@@ -216,12 +230,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 14,
   },
-  groupIconCircle: {
+  groupAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   groupCardInfo: {
     flex: 1,
@@ -269,7 +281,13 @@ const styles = StyleSheet.create({
   },
   statusAmount: {
     fontWeight: '700',
-    fontSize: 14, // Adjusted for full text labels like "Settled"
+    fontSize: 14,
+  },
+  multiCurrencyHint: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.outline,
+    marginTop: 2,
   },
 
   groupCardBottom: {

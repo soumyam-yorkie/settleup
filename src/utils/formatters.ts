@@ -1,13 +1,21 @@
+import { getCurrencySymbol } from './currencyUtils';
+
 /**
  * Formats a numeric amount into a currency string.
  * @param amount The amount to format
- * @param symbol The currency symbol (defaults to $)
+ * @param currencyCodeOrSymbol The currency code (USD, EUR) or symbol ($)
  */
-export const formatCurrency = (amount: number, symbol: string = '$'): string => {
-  const absAmount = Math.abs(amount).toFixed(2);
+export const formatCurrency = (amount: number, currencyCodeOrSymbol: string = 'USD'): string => {
+  const symbol = currencyCodeOrSymbol.length > 1 && !currencyCodeOrSymbol.includes('$') 
+    ? getCurrencySymbol(currencyCodeOrSymbol) 
+    : currencyCodeOrSymbol;
+    
+  const absAmount = Math.abs(amount).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   const sign = amount < 0 ? '-' : amount > 0 ? '+' : '';
   
-  // Return formatted string (e.g., "+$45.00" or "-$12.50" or "$0.00")
   if (amount === 0) return `${symbol}0.00`;
   return `${sign}${symbol}${absAmount}`;
 };

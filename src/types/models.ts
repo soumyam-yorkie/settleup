@@ -13,7 +13,9 @@ export interface Group {
   category: 'Trip' | 'Home' | 'Office' | 'Party' | 'Others';
   currency: string;
   members: string[]; // User IDs
+  avatarUrl?: string;
   createdAt: string;
+  defaultSplit?: 'Equal' | 'Exact' | 'Percentage';
 }
 
 export interface Expense {

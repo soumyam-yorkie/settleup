@@ -63,6 +63,10 @@ export const palette = {
   primaryAlpha30: 'rgba(31, 26, 111, 0.3)',
   blackAlpha40: 'rgba(0, 0, 0, 0.4)',
   blackAlpha50: 'rgba(0, 0, 0, 0.5)',
+  
+  // Default Placeholders
+  defaultUserAvatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+  defaultGroupAvatar: 'https://cdn-icons-png.flaticon.com/512/166/166258.png', // Or another appropriate 3-person icon
 };
 
 export const theme = {

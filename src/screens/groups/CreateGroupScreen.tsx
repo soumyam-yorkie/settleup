@@ -11,7 +11,6 @@ import {
   Platform 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { 
   ArrowLeft, 
   Pencil, 
@@ -24,14 +23,19 @@ import {
   UserPlus, 
   ChevronRight, 
   ArrowRight,
-  X 
+  X,
+  DollarSign,
 } from 'lucide-react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { theme } from '../../utils/theme';
-import { MOCK_FRIENDS } from '../../services/mockData';
-import { PickedContact } from '../../services/contactsService';
+import { useAppContext } from '../../context/AppContext';
+import { BottomPickerModal } from '../../components/BottomPickerModal';
 import { ContactPickerModal } from '../../components/ContactPickerModal';
+import { RootStackParamList } from '../../types/navigation';
+import { PickedContact } from '../../services/contactsService';
+import { theme } from '../../utils/theme';
+import { Avatar } from '../../components/Avatar';
 
 const CATEGORIES = [
   { id: 'Trip', label: 'Trip', icon: Receipt },
@@ -41,14 +45,20 @@ const CATEGORIES = [
   { id: 'Others', label: 'Others', icon: MoreHorizontal },
 ];
 
-export const CreateGroupScreen = () => {
-  const navigation = useNavigation();
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD'];
+
+type Props = NativeStackScreenProps<RootStackParamList, 'CreateGroup'>;
+
+export const CreateGroupScreen = ({ navigation }: Props) => {
+  const { currentUser, friends, createGroup, addFriend } = useAppContext();
   const [groupName, setGroupName] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Trip');
+  const [selectedCategory, setSelectedCategory] = useState<any>('Trip');
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [searchQuery, setSearchQuery] = useState('');
   const [avatarUri, setAvatarUri] = useState<string>('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80');
   const [selectedMembers, setSelectedMembers] = useState<PickedContact[]>([]);
   const [isContactModalVisible, setIsContactModalVisible] = useState(false);
+  const [isCurrencyModalVisible, setIsCurrencyModalVisible] = useState(false);
 
   const handlePickImage = () => {
     launchImageLibrary({
@@ -80,6 +90,42 @@ export const CreateGroupScreen = () => {
         : [...prev, member]
     );
   };
+
+  const handleCreateGroup = () => {
+    if (!groupName.trim()) return;
+
+    // Persist any newly added contacts to the global friends list
+    selectedMembers.forEach(member => {
+      const exists = friends.some(f => f.id === member.id);
+      if (!exists) {
+        addFriend({
+          id: member.id,
+          name: member.name,
+          email: member.phoneOrEmail || `${member.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
+          avatarUrl: member.avatarUrl,
+          defaultCurrency: selectedCurrency,
+        });
+      }
+    });
+
+    const memberIds = [currentUser.id, ...selectedMembers.map(m => m.id)];
+    
+    createGroup({
+      id: Math.random().toString(36).substr(2, 9),
+      name: groupName,
+      category: selectedCategory,
+      currency: selectedCurrency,
+      members: memberIds,
+      createdAt: new Date().toISOString(),
+    });
+
+    navigation.goBack();
+  };
+
+  const filteredFriends = friends.filter(f =>
+    f.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    !selectedMembers.find(m => m.id === f.id)
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -165,6 +211,22 @@ export const CreateGroupScreen = () => {
             </View>
           </View>
 
+          {/* Currency Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>CURRENCY</Text>
+            <TouchableOpacity
+              style={styles.currencyRow}
+              onPress={() => setIsCurrencyModalVisible(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.currencyIconBg}>
+                <DollarSign color={theme.colors.primary} size={18} />
+              </View>
+              <Text style={styles.currencyValue}>{selectedCurrency}</Text>
+              <ChevronRight color={theme.colors.outline} size={18} />
+            </TouchableOpacity>
+          </View>
+
           {/* Members Section */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>MEMBERS</Text>
@@ -178,13 +240,7 @@ export const CreateGroupScreen = () => {
               >
                 {selectedMembers.map((member) => (
                   <View key={member.id} style={styles.selectedMemberChip}>
-                    {member.avatarUrl ? (
-                      <Image source={{ uri: member.avatarUrl }} style={styles.selectedMemberAvatar} />
-                    ) : (
-                      <View style={styles.selectedMemberAvatarPlaceholder}>
-                        <Text style={styles.selectedMemberInitials}>{member.name.charAt(0)}</Text>
-                      </View>
-                    )}
+                    <Avatar uri={member.avatarUrl} style={styles.selectedMemberAvatar} />
                     <Text style={styles.selectedMemberName} numberOfLines={1}>
                       {member.name.split(' ')[0]}
                     </Text>
@@ -227,7 +283,7 @@ export const CreateGroupScreen = () => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.recentFriendsScroll}
             >
-              {MOCK_FRIENDS.slice(0, 3).map((friend) => {
+              {filteredFriends.slice(0, 5).map((friend) => {
                 const isSelected = selectedMembers.some(m => m.id === friend.id);
                 return (
                   <TouchableOpacity 
@@ -239,7 +295,7 @@ export const CreateGroupScreen = () => {
                     onPress={() => toggleMember({ id: friend.id, name: friend.name, avatarUrl: friend.avatarUrl })}
                     activeOpacity={0.8}
                   >
-                    <Image source={{ uri: friend.avatarUrl }} style={styles.recentFriendAvatar} />
+                    <Avatar uri={friend.avatarUrl} style={styles.recentFriendAvatar} />
                     <View style={styles.recentFriendInfo}>
                       <Text style={[
                         styles.recentFriendName,
@@ -261,7 +317,12 @@ export const CreateGroupScreen = () => {
 
         {/* Footer Button */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.createButton} activeOpacity={0.8}>
+          <TouchableOpacity 
+            style={[styles.createButton, !groupName.trim() && styles.createButtonDisabled]} 
+            activeOpacity={0.8}
+            onPress={handleCreateGroup}
+            disabled={!groupName.trim()}
+          >
             <Text style={styles.createButtonText}>Create Group</Text>
             <ArrowRight color={theme.colors.white} size={20} />
           </TouchableOpacity>
@@ -271,6 +332,15 @@ export const CreateGroupScreen = () => {
           isVisible={isContactModalVisible}
           onClose={() => setIsContactModalVisible(false)}
           onSelect={handleAddContact}
+        />
+
+        <BottomPickerModal
+          visible={isCurrencyModalVisible}
+          title="Select Currency"
+          selectedValue={selectedCurrency}
+          options={CURRENCIES.map(cur => ({ label: cur, value: cur }))}
+          onSelect={setSelectedCurrency}
+          onClose={() => setIsCurrencyModalVisible(false)}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -305,7 +375,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   headerRight: {
-    width: 40, // To balance the back button
+    width: 40,
   },
 
   scrollContent: {
@@ -394,6 +464,31 @@ const styles = StyleSheet.create({
   categoryLabelSelected: {
     color: theme.colors.primary,
     fontWeight: '700',
+  },
+
+  // Currency
+  currencyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceContainerLow,
+    borderRadius: theme.borderRadius.xxl,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.md,
+  },
+  currencyIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primaryFixed,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  currencyValue: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.onSurface,
   },
 
   // Members
@@ -540,7 +635,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: Platform.OS === 'ios' ? 0 : theme.spacing.lg,
     paddingTop: theme.spacing.md,
-    backgroundColor: 'transparent', // Can add linear gradient here if needed
+    backgroundColor: 'transparent',
   },
   createButton: {
     flexDirection: 'row',
@@ -551,6 +646,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...theme.shadows.medium,
     gap: 8,
+  },
+  createButtonDisabled: {
+    backgroundColor: theme.colors.outlineVariant,
   },
   createButtonText: {
     color: theme.colors.white,

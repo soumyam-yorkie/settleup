@@ -28,11 +28,13 @@ import { CategorySelector } from '../../components/CategorySelector';
 import { MultiSelectFriendsModal } from '../../components/MultiSelectFriendsModal';
 import { BottomPickerModal } from '../../components/BottomPickerModal';
 import { CalendarModal } from '../../components/CalendarModal';
+import { useAppContext } from '../../context/AppContext';
 import { theme } from '../../utils/theme';
-import { MOCK_USER, MOCK_FRIENDS, MOCK_GROUPS } from '../../services/mockData';
+import { Avatar } from '../../components/Avatar';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
+import { getCurrencySymbol } from '../../utils/currencyUtils';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -42,13 +44,16 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AddExpense'>;
 
 export const AddExpenseScreen = ({ navigation, route }: Props) => {
   const { groupId, friendId } = route.params || {};
+  
+  // Context Data - Move to top to ensure availability for state initialization
+  const { currentUser, friends: allFriends, groups, addExpense } = useAppContext();
 
   // Form State
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Food');
   const [payerType, setPayerType] = useState<'Me' | 'Friend'>('Me');
-  const [actualPayerId, setActualPayerId] = useState(MOCK_USER.id);
+  const [actualPayerId, setActualPayerId] = useState(currentUser.id);
   const [isWholeGroup, setIsWholeGroup] = useState(true);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [splitType, setSplitType] = useState<'Equal' | 'Custom'>('Equal');
@@ -61,18 +66,31 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
 
-  // Context Data
   const currentGroup = useMemo(() => 
-    MOCK_GROUPS.find(g => g.id === groupId) || MOCK_GROUPS[0],
-  [groupId]);
+    groupId ? groups.find(g => g.id === groupId) : null,
+  [groupId, groups]);
 
   const groupMembers = useMemo(() => {
-    return currentGroup.members
-      .map(id => MOCK_FRIENDS.find(f => f.id === id) || (id === MOCK_USER.id ? MOCK_USER : null))
-      .filter((m): m is any => m !== null);
-  }, [currentGroup]);
-
-  const allFriends = useMemo(() => MOCK_FRIENDS, []);
+    if (currentGroup) {
+      return currentGroup.members
+        .map(id => allFriends.find(f => f.id === id) || (id === currentUser.id ? currentUser : null))
+        .filter((m): m is any => m !== null);
+    }
+    // If no group, but friendId is present, the members are just Me and that Friend
+    if (friendId) {
+      const friend = allFriends.find(f => f.id === friendId);
+      return friend ? [currentUser, friend] : [currentUser];
+    }
+    // Fallback: Default to first group if everything is missing (to maintain legacy behavior if preferred)
+    // or just Me. Let's default to groups[0] for now to avoid breaking UI that expects members.
+    const defaultGroup = groups[0];
+    if (defaultGroup) {
+      return defaultGroup.members
+        .map(id => allFriends.find(f => f.id === id) || (id === currentUser.id ? currentUser : null))
+        .filter((m): m is any => m !== null);
+    }
+    return [currentUser];
+  }, [currentGroup, allFriends, currentUser, friendId, groups]);
 
   // Initial setup based on route params
   useEffect(() => {
@@ -84,8 +102,9 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
 
   const activeParticipants = useMemo(() => {
     if (isWholeGroup) return groupMembers;
-    return groupMembers.filter(m => selectedParticipants.includes(m.id) || m.id === MOCK_USER.id);
-  }, [isWholeGroup, selectedParticipants, groupMembers]);
+    const participants = groupMembers.filter(m => selectedParticipants.includes(m.id) || m.id === currentUser.id);
+    return participants;
+  }, [isWholeGroup, selectedParticipants, groupMembers, currentUser?.id]);
 
   const totalCustomAmount = useMemo(() => {
     return Object.values(customAmounts).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
@@ -94,6 +113,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
   const isAmountBalanced = useMemo(() => {
     if (splitType === 'Equal') return true;
     const total = parseFloat(amount) || 0;
+    if (total === 0 && totalCustomAmount === 0) return true;
     return Math.abs(total - totalCustomAmount) < 0.01;
   }, [amount, totalCustomAmount, splitType]);
 
@@ -101,9 +121,9 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setPayerType(type);
     if (type === 'Me') {
-      setActualPayerId(MOCK_USER.id);
+      setActualPayerId(currentUser.id);
     } else {
-      const firstFriend = groupMembers.find(m => m.id !== MOCK_USER.id);
+      const firstFriend = groupMembers.find(m => m.id !== currentUser.id);
       if (firstFriend) setActualPayerId(firstFriend.id);
     }
   };
@@ -128,6 +148,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
   };
 
   const handleToggleParticipant = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsWholeGroup(false);
     setSelectedParticipants(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
@@ -135,11 +156,13 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
   };
 
   const handleToggleWholeGroup = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsWholeGroup(true);
     setSelectedParticipants([]);
   };
 
   const handleAddParticipants = (ids: string[]) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsWholeGroup(false);
     setSelectedParticipants(ids);
   };
@@ -161,12 +184,34 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
     if (dateOption === 'today') return 'Today';
     if (dateOption === 'yesterday') return 'Yesterday';
     
-    // Format: "Oct 28"
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     return `${months[customDate.getMonth()]} ${customDate.getDate()}`;
   };
 
   const handleSave = () => {
+    const totalAmount = parseFloat(amount);
+    if (isNaN(totalAmount) || totalAmount <= 0) return;
+
+    const splits = activeParticipants.map(p => ({
+      userId: p.id,
+      amount: splitType === 'Equal' 
+        ? totalAmount / activeParticipants.length 
+        : parseFloat(customAmounts[p.id]) || 0
+    }));
+
+    addExpense({
+      id: `e-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      groupId: currentGroup?.id,
+      description: description.trim() || 'General Expense',
+      amount: totalAmount,
+      currency: currentGroup?.currency || 'USD',
+      paidBy: actualPayerId,
+      splitType,
+      date: getDateLabel(),
+      category: category as any,
+      splits
+    });
+
     navigation.goBack();
   };
 
@@ -183,7 +228,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
         <View style={styles.amountCard}>
           <Text style={styles.sectionLabel}>AMOUNT</Text>
           <View style={styles.amountInputContainer}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.currencySymbol}>{getCurrencySymbol(currentGroup?.currency || 'USD')}</Text>
             <TextInput
               style={styles.amountInput}
               placeholder="0.00"
@@ -238,7 +283,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
             <View style={styles.subSelectorContainer}>
               <Text style={styles.subSelectorLabel}>Select who paid:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.payerAvatars}>
-                {groupMembers.filter(m => m.id !== MOCK_USER.id).map(member => {
+                {groupMembers.filter(m => m.id !== currentUser.id).map(member => {
                   const isActive = actualPayerId === member.id;
                   return (
                     <TouchableOpacity 
@@ -246,7 +291,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
                       onPress={() => setActualPayerId(member.id)}
                       style={[styles.payerAvatarItem, isActive && styles.payerAvatarActive]}
                     >
-                      <Image source={{ uri: member.avatarUrl }} style={styles.smallAvatar} />
+                      <Avatar uri={member.avatarUrl} style={styles.smallAvatar} />
                       <Text style={[styles.smallAvatarName, isActive && styles.activeText]}>
                         {member.name.split(' ')[0]}
                       </Text>
@@ -285,7 +330,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
 
           {splitType === 'Equal' ? (
             <ParticipantSelector
-              participants={groupMembers.filter(m => m.id !== MOCK_USER.id)}
+              participants={groupMembers.filter(m => m.id !== currentUser.id)}
               selectedIds={selectedParticipants}
               onToggle={handleToggleParticipant}
               isWholeGroup={isWholeGroup}
@@ -297,7 +342,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
                 <View key={participant.id} style={styles.customSplitRow}>
                   <View style={styles.participantInfo}>
                     {participant.avatarUrl ? (
-                      <Image source={{ uri: participant.avatarUrl }} style={styles.miniAvatar} />
+                      <Avatar uri={participant.avatarUrl} style={styles.miniAvatar} />
                     ) : (
                       <View style={styles.miniPlaceholder}>
                         <Text style={styles.miniPlaceholderText}>{participant.name[0]}</Text>
@@ -306,7 +351,7 @@ export const AddExpenseScreen = ({ navigation, route }: Props) => {
                     <Text style={styles.participantName}>{participant.name}</Text>
                   </View>
                   <View style={styles.customInputContainer}>
-                    <Text style={styles.miniCurrency}>$</Text>
+                    <Text style={styles.miniCurrency}>{getCurrencySymbol(currentGroup?.currency || 'USD')}</Text>
                     <TextInput
                       style={styles.customAmountInput}
                       value={customAmounts[participant.id] || ''}

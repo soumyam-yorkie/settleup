@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+
 import { theme } from '../utils/theme';
+import { Avatar } from './Avatar';
 
 interface Participant {
   id: string;
@@ -52,7 +54,6 @@ export const ParticipantSelector = ({
       {participants.map((person) => {
         const isSelected = selectedIds.includes(person.id);
         const firstName = person.name.split(' ')[0];
-        const initials = person.name.split(' ').map(n => n[0]).join('').toUpperCase();
 
         return (
           <TouchableOpacity 
@@ -65,13 +66,7 @@ export const ParticipantSelector = ({
               styles.avatarContainer, 
               isSelected && !isWholeGroup && styles.avatarSelected
             ]}>
-              {person.avatarUrl ? (
-                <Image source={{ uri: person.avatarUrl }} style={styles.avatar} />
-              ) : (
-                <View style={[styles.avatar, styles.placeholderAvatar]}>
-                  <Text style={styles.placeholderText}>{initials}</Text>
-                </View>
-              )}
+              <Avatar uri={person.avatarUrl} style={styles.avatar} />
             </View>
             <Text style={[
               styles.name, 
@@ -121,16 +116,6 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 18,
     fontWeight: '800',
-  },
-  placeholderAvatar: {
-    backgroundColor: theme.colors.surfaceContainerHigh,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    color: theme.colors.primary,
-    fontSize: 16,
-    fontWeight: '700',
   },
   name: {
     fontSize: 12,

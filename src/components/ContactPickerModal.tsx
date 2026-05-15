@@ -7,12 +7,12 @@ import {
   TouchableOpacity, 
   FlatList, 
   TextInput, 
-  Image, 
   ActivityIndicator 
 } from 'react-native';
-import { X, Search, User } from 'lucide-react-native';
+import { X, Search } from 'lucide-react-native';
 
 import { theme } from '../utils/theme';
+import { Avatar } from './Avatar';
 import { getAllDeviceContacts, PickedContact } from '../services/contactsService';
 
 interface ContactPickerModalProps {
@@ -60,13 +60,7 @@ export const ContactPickerModal = ({ isVisible, onClose, onSelect }: ContactPick
       }}
     >
       <View style={styles.avatarContainer}>
-        {item.avatarUrl ? (
-          <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-        ) : (
-          <View style={styles.avatarPlaceholder}>
-            <User color={theme.colors.onPrimaryContainer} size={20} />
-          </View>
-        )}
+        <Avatar uri={item.avatarUrl} style={styles.avatar} />
       </View>
       <View style={styles.contactInfo}>
         <Text style={styles.contactName}>{item.name}</Text>

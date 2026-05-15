@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,31 +6,40 @@ import {
   FlatList, 
   SectionList, 
   TouchableOpacity, 
-  Image, 
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { 
-  ArrowLeft, 
-  MoreVertical, 
-  Receipt, 
-  Plus, 
-  Plane,
-  Utensils,
-  Car,
-  ShoppingBag,
+  Utensils, 
+  Car, 
+  ShoppingBag, 
+  Film,
+  Home,
+  Briefcase,
   Zap,
-  Users
+  Receipt,
+  ArrowLeft,
+  MoreVertical,
+  Plus,
+  Search,
+  Settings,
+  Trash2,
+  LogOut,
+  Edit3,
+  Users,
+  Plane
 } from 'lucide-react-native';
 
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { SegmentedControl } from '../../components/SegmentedControl';
+import { BottomPickerModal } from '../../components/BottomPickerModal';
 import { GroupSettingsTab } from './GroupSettingsTab';
-import { MOCK_EXPENSES, MOCK_USER, MOCK_FRIENDS, MOCK_GROUPS } from '../../services/mockData';
+import { useAppContext } from '../../context/AppContext';
 import { theme } from '../../utils/theme';
 import { formatCurrency } from '../../utils/formatters';
+import { Avatar } from '../../components/Avatar';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
@@ -40,10 +49,14 @@ type Props = NativeStackScreenProps<RootStackParamList, 'GroupDetail'>;
 type ActiveTab = 'Expenses' | 'Balances' | 'Settings';
 
 const CATEGORY_ICONS: Record<string, any> = {
-  Groceries: ShoppingBag,
-  Dinner: Utensils,
-  Gas: Car,
-  Trip: Plane,
+  Food: Utensils,
+  Transport: Car,
+  Shopping: ShoppingBag,
+  Entertainment: Film,
+  Home: Home,
+  Office: Briefcase,
+  Settlement: Receipt,
+  Other: Zap,
   Default: Receipt,
 };
 
@@ -51,20 +64,29 @@ export const GroupDetailScreen = ({ route }: Props) => {
   const navigation = useNavigation();
   const { groupId } = route.params;
   const [activeTab, setActiveTab] = useState<ActiveTab>('Expenses');
-
-  const groupExpenses = useMemo(() => 
-    MOCK_EXPENSES.filter((e) => e.groupId === groupId),
-  [groupId]);
+  const [isMoreMenuVisible, setIsMoreMenuVisible] = useState(false);
+  const { currentUser, groups, expenses, friends, leaveGroup, deleteGroup } = useAppContext();
 
   const groupInfo = useMemo(() => 
-    MOCK_GROUPS.find(g => g.id === groupId),
-  [groupId]);
+    groups.find(g => g.id === groupId),
+  [groupId, groups]);
+
+  // Navigate back automatically when group is deleted or current user leaves
+  useEffect(() => {
+    if (!groupInfo) {
+      navigation.goBack();
+    }
+  }, [groupInfo, navigation]);
+
+  const groupExpenses = useMemo(() => 
+    expenses.filter((e) => e.groupId === groupId),
+  [groupId, expenses]);
 
   const memberBalances = useMemo(() => {
     if (!groupInfo) return [];
     
     return groupInfo.members.map(memberId => {
-      const friend = MOCK_FRIENDS.find(f => f.id === memberId) || (memberId === MOCK_USER.id ? MOCK_USER : null);
+      const friend = friends.find(f => f.id === memberId) || (memberId === currentUser.id ? currentUser : null);
       if (!friend) return null;
       
       let balance = 0;
@@ -84,34 +106,43 @@ export const GroupDetailScreen = ({ route }: Props) => {
         balance
       };
     }).filter((item): item is NonNullable<typeof item> => item !== null);
-  }, [groupInfo, groupExpenses]);
+  }, [groupInfo, groupExpenses, friends, currentUser]);
 
-  const { totalSpend, yourBalance } = useMemo(() => {
-    let spend = 0;
-    let balance = 0;
+  const { spendByCurrency, balanceByCurrency } = useMemo(() => {
+    const spend: Record<string, number> = {};
+    const balance: Record<string, number> = {};
 
     groupExpenses.forEach(expense => {
-      spend += expense.amount;
+      const cur = expense.currency || groupInfo?.currency || 'USD';
+      spend[cur] = (spend[cur] || 0) + expense.amount;
       
-      const mySplit = expense.splits.find(s => s.userId === MOCK_USER.id);
-      if (expense.paidBy === MOCK_USER.id) {
-        // I paid, others owe me (total - my share)
-        balance += (expense.amount - (mySplit?.amount || 0));
+      const mySplit = expense.splits.find(s => s.userId === currentUser.id);
+      if (expense.paidBy === currentUser.id) {
+        balance[cur] = (balance[cur] || 0) + (expense.amount - (mySplit?.amount || 0));
       } else if (mySplit) {
-        // Someone else paid, I owe my share
-        balance -= mySplit.amount;
+        balance[cur] = (balance[cur] || 0) - mySplit.amount;
       }
     });
 
-    return { totalSpend: spend, yourBalance: balance };
-  }, [groupExpenses]);
+    return { spendByCurrency: spend, balanceByCurrency: balance };
+  }, [groupExpenses, currentUser.id, groupInfo?.currency]);
+
+  const currencyKeys = useMemo(() => {
+    const allKeys = new Set([...Object.keys(spendByCurrency), ...Object.keys(balanceByCurrency)]);
+    // Group's current currency first, then alphabetical
+    const groupCur = groupInfo?.currency || 'USD';
+    return [groupCur, ...Array.from(allKeys).filter(k => k !== groupCur).sort()];
+  }, [spendByCurrency, balanceByCurrency, groupInfo?.currency]);
 
 
-  const renderExpenseItem = ({ item }: { item: typeof MOCK_EXPENSES[0] }) => {
+
+
+  const renderExpenseItem = ({ item }: { item: typeof expenses[0] }) => {
     // FIX: Using category for icon lookup instead of description
-    const Icon = CATEGORY_ICONS[item.category] || CATEGORY_ICONS.Default;
-    const mySplit = item.splits.find(s => s.userId === MOCK_USER.id);
-    const isPaidByMe = item.paidBy === MOCK_USER.id;
+    const Icon = CATEGORY_ICONS[item.category || 'Default'] || CATEGORY_ICONS.Default;
+    const mySplit = item.splits.find(s => s.userId === currentUser.id);
+    const isPaidByMe = item.paidBy === currentUser.id;
+    const payer = friends.find(f => f.id === item.paidBy) || (item.paidBy === currentUser.id ? currentUser : { name: 'Unknown' });
     const isLent = isPaidByMe;
     const amountToDisplay = isPaidByMe 
       ? (item.amount - (mySplit?.amount || 0)) 
@@ -130,17 +161,17 @@ export const GroupDetailScreen = ({ route }: Props) => {
         <View style={styles.expenseMainInfo}>
           <Text style={styles.expenseTitle}>{item.description}</Text>
           <Text style={styles.expenseSubtitle}>
-            Paid by {isPaidByMe ? 'You' : 'Alex'} • Yesterday
+            Paid by {isPaidByMe ? 'You' : payer.name.split(' ')[0]} • {item.date}
           </Text>
         </View>
         
         <View style={styles.expenseAmountContainer}>
-          <Text style={styles.expenseTotalAmount}>{formatCurrency(item.amount)}</Text>
+          <Text style={styles.expenseTotalAmount}>{formatCurrency(item.amount, item.currency)}</Text>
           <Text style={[
             styles.expenseYourStatus,
             isLent ? styles.statusLent : styles.statusOwe
           ]}>
-            {isLent ? `You lent ${formatCurrency(amountToDisplay)}` : `You owe ${formatCurrency(amountToDisplay)}`}
+            {isLent ? `You lent ${formatCurrency(amountToDisplay, item.currency)}` : `You owe ${formatCurrency(amountToDisplay, item.currency)}`}
           </Text>
         </View>
       </Card>
@@ -152,11 +183,11 @@ export const GroupDetailScreen = ({ route }: Props) => {
   }, [memberBalances]);
 
   const renderDebtItem = ({ item }: { item: SimplifiedDebt }) => {
-    const fromUser = MOCK_FRIENDS.find(f => f.id === item.fromId) || (item.fromId === MOCK_USER.id ? MOCK_USER : { name: 'Unknown', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80' });
-    const toUser = MOCK_FRIENDS.find(f => f.id === item.toId) || (item.toId === MOCK_USER.id ? MOCK_USER : { name: 'Unknown', avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80' });
+    const fromUser = friends.find(f => f.id === item.fromId) || (item.fromId === currentUser.id ? currentUser : { name: 'Unknown', avatarUrl: '' });
+    const toUser = friends.find(f => f.id === item.toId) || (item.toId === currentUser.id ? currentUser : { name: 'Unknown', avatarUrl: '' });
     
-    const isFromMe = item.fromId === MOCK_USER.id;
-    const isToMe = item.toId === MOCK_USER.id;
+    const isFromMe = item.fromId === currentUser.id;
+    const isToMe = item.toId === currentUser.id;
     const isPersonal = isFromMe || isToMe;
 
     if (isPersonal) {
@@ -173,10 +204,10 @@ export const GroupDetailScreen = ({ route }: Props) => {
               style={styles.actionHeader}
               onPress={() => navigation.navigate('FriendDetail' as never, { friendId: otherUser.id } as never)}
             >
-              <Image source={{ uri: (otherUser as any).avatarUrl }} style={styles.actionAvatar} />
+              <Avatar uri={(otherUser as any).avatarUrl} style={styles.actionAvatar} />
               <View style={styles.actionInfo}>
                 <Text style={styles.actionStatusText}>{statusText}</Text>
-                <Text style={[styles.actionAmount, { color: accentColor }]}>{formatCurrency(item.amount)}</Text>
+                <Text style={[styles.actionAmount, { color: accentColor }]}>{formatCurrency(item.amount, groupInfo?.currency)}</Text>
               </View>
             </TouchableOpacity>
             
@@ -223,19 +254,19 @@ export const GroupDetailScreen = ({ route }: Props) => {
       >
         <View style={[styles.accentBarSmall, { backgroundColor: theme.colors.outline }]} />
         <View style={styles.otherDebtInner}>
-          <Image source={{ uri: (fromUser as any).avatarUrl }} style={styles.otherDebtAvatar} />
+          <Avatar uri={(fromUser as any).avatarUrl} style={styles.otherDebtAvatar} />
           <Text style={styles.otherDebtText}>
             <Text style={styles.bold}>{fromUser.name.split(' ')[0]}</Text> owes <Text style={styles.bold}>{toUser.name.split(' ')[0]}</Text>
           </Text>
-          <Text style={styles.otherDebtAmount}>{formatCurrency(item.amount)}</Text>
+          <Text style={styles.otherDebtAmount}>{formatCurrency(item.amount, groupInfo?.currency)}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
   const debtSections = useMemo(() => {
-    const personal = simplifiedDebts.filter(d => d.fromId === MOCK_USER.id || d.toId === MOCK_USER.id);
-    const others = simplifiedDebts.filter(d => d.fromId !== MOCK_USER.id && d.toId !== MOCK_USER.id);
+    const personal = simplifiedDebts.filter(d => d.fromId === currentUser.id || d.toId === currentUser.id);
+    const others = simplifiedDebts.filter(d => d.fromId !== currentUser.id && d.toId !== currentUser.id);
     
     const sections: { title: string; icon: string; data: SimplifiedDebt[] }[] = [];
     if (personal.length > 0) {
@@ -245,7 +276,7 @@ export const GroupDetailScreen = ({ route }: Props) => {
       sections.push({ title: 'BETWEEN OTHERS', icon: 'users', data: others });
     }
     return sections;
-  }, [simplifiedDebts]);
+  }, [simplifiedDebts, currentUser.id]);
 
   const renderSectionHeader = ({ section }: { section: { title: string; icon: string } }) => (
     <View style={styles.sectionHeaderRow}>
@@ -263,58 +294,88 @@ export const GroupDetailScreen = ({ route }: Props) => {
     </View>
   );
 
-  const renderListHeader = () => (
-    <View style={styles.scrollContent}>
-      {/* Top Overview Card */}
-      <Card variant="elevated" style={styles.overviewCard} padding={0}>
-        <View style={styles.overviewCardContent}>
-          <View style={styles.overviewTopRow}>
-            <View style={styles.groupIconBox}>
-              <Plane color={theme.colors.white} size={24} />
+  const renderListHeader = () => {
+    const members = groupInfo?.members.map(id => friends.find(f => f.id === id) || (id === currentUser.id ? currentUser : null)).filter(Boolean) || [];
+    
+    return (
+      <View style={styles.scrollContent}>
+        {/* Top Overview Card */}
+        <Card variant="elevated" style={styles.overviewCard} padding={0}>
+          <View style={styles.overviewCardContent}>
+            <View style={styles.overviewTopRow}>
+              <View style={styles.groupIconBox}>
+                <Avatar uri={groupInfo?.avatarUrl} style={styles.headerGroupAvatar} type="group" />
+              </View>
+              <View style={styles.memberAvatarStack}>
+                {members.slice(0, 3).map((m, i) => (
+                  <Avatar 
+                    key={m?.id}
+                    uri={m?.avatarUrl}
+                    style={[styles.stackAvatar, i !== 0 && styles.stackAvatarOverlap]}
+                  />
+                ))}
+                {members.length > 3 && (
+                  <View style={[styles.stackAvatar, styles.stackMore]}>
+                    <Text style={styles.stackMoreText}>+{members.length - 3}</Text>
+                  </View>
+                )}
+              </View>
             </View>
-            <View style={styles.memberAvatarStack}>
-              {MOCK_FRIENDS.slice(0, 3).map((friend, i) => (
-                <Image 
-                  key={friend.id}
-                  source={{ uri: friend.avatarUrl }}
-                  style={[styles.stackAvatar, { marginLeft: i === 0 ? 0 : -12 }]}
-                />
-              ))}
-              <View style={[styles.stackAvatar, styles.stackMore]}>
-                <Text style={styles.stackMoreText}>+5</Text>
+
+            <View style={styles.overviewTitleSection}>
+              <Text style={styles.groupTitle}>{groupInfo?.name || 'Group Details'}</Text>
+              <Text style={styles.groupSubtitle}>Active shared ledger</Text>
+            </View>
+
+            <View style={styles.overviewBalanceRow}>
+              <View style={styles.balanceItem}>
+                <Text style={styles.balanceLabel}>TOTAL GROUP SPEND</Text>
+                {currencyKeys.map(cur => {
+                  const val = spendByCurrency[cur];
+                  if (!val) return null;
+                  return (
+                    <Text key={`spend-${cur}`} style={styles.balanceValue}>
+                      {formatCurrency(val, cur)}
+                    </Text>
+                  );
+                })}
+                {Object.keys(spendByCurrency).length === 0 && (
+                  <Text style={styles.balanceValue}>
+                    {formatCurrency(0, groupInfo?.currency)}
+                  </Text>
+                )}
+              </View>
+              <View style={styles.balanceItem}>
+                <Text style={styles.balanceLabel}>YOUR BALANCE</Text>
+                {currencyKeys.map(cur => {
+                  const val = balanceByCurrency[cur];
+                  if (val === undefined || val === 0) return null;
+                  return (
+                    <Text 
+                      key={`bal-${cur}`}
+                      style={[
+                        styles.balanceValue, 
+                        val >= 0 ? styles.balancePositive : styles.balanceNegative
+                      ]}
+                    >
+                      {formatCurrency(val, cur)}
+                    </Text>
+                  );
+                })}
+                {Object.keys(balanceByCurrency).every(k => (balanceByCurrency[k] || 0) === 0) && (
+                  <Text style={styles.balanceValue}>
+                    {formatCurrency(0, groupInfo?.currency)}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
-
-          <View style={styles.overviewTitleSection}>
-            <Text style={styles.groupTitle}>{groupInfo?.name || 'Group Details'}</Text>
-            <Text style={styles.groupSubtitle}>Active shared ledger</Text>
-          </View>
-
-          <View style={styles.overviewBalanceRow}>
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceLabel}>TOTAL GROUP SPEND</Text>
-              <Text style={styles.balanceValue}>
-                {formatCurrency(totalSpend)}
-              </Text>
-            </View>
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceLabel}>YOUR BALANCE</Text>
-              <Text style={[
-                styles.balanceValue, 
-                yourBalance >= 0 ? styles.balancePositive : styles.balanceNegative
-              ]}>
-                {formatCurrency(yourBalance)}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Card>
+        </Card>
 
       {/* Tabs */}
       <View style={[
         styles.tabContainer, 
-        { marginBottom: activeTab === 'Balances' ? theme.spacing.lg : theme.spacing.xl }
+        { marginBottom: theme.spacing.lg }
       ]}>
         <SegmentedControl
           tabs={['Expenses', 'Balances', 'Settings']}
@@ -323,7 +384,8 @@ export const GroupDetailScreen = ({ route }: Props) => {
         />
       </View>
     </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -338,7 +400,10 @@ export const GroupDetailScreen = ({ route }: Props) => {
           <ArrowLeft color={theme.colors.primary} size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{groupInfo?.name || 'Group Details'}</Text>
-        <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <TouchableOpacity
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPress={() => setIsMoreMenuVisible(true)}
+        >
           <MoreVertical color={theme.colors.primary} size={24} />
         </TouchableOpacity>
       </View>
@@ -348,20 +413,34 @@ export const GroupDetailScreen = ({ route }: Props) => {
 
       {/* Expenses Tab — FlatList */}
       {activeTab === 'Expenses' && (
-        <FlatList
-          data={groupExpenses}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-          renderItem={renderExpenseItem}
-          ListFooterComponent={<View style={styles.bottomSpacer} />}
-        />
+        groupExpenses.length > 0 ? (
+          <FlatList
+            style={styles.flex1}
+            data={groupExpenses}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            renderItem={renderExpenseItem}
+            ListFooterComponent={<View style={styles.bottomSpacer} />}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <Receipt size={40} color={theme.colors.outline} />
+            </View>
+            <Text style={styles.emptyStateText}>No expenses yet</Text>
+            <Text style={styles.emptyStateSubtext}>
+              Tap the + button to add your first expense!
+            </Text>
+          </View>
+        )
       )}
 
       {/* Balances Tab — SectionList */}
       {activeTab === 'Balances' && (
         debtSections.length > 0 ? (
           <SectionList
+            style={styles.flex1}
             sections={debtSections}
             keyExtractor={(_, index) => `debt-${index}`}
             showsVerticalScrollIndicator={false}
@@ -373,7 +452,13 @@ export const GroupDetailScreen = ({ route }: Props) => {
           />
         ) : (
           <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <Users size={40} color={theme.colors.outline} />
+            </View>
             <Text style={styles.emptyStateText}>Everyone is settled up! 🎉</Text>
+            <Text style={styles.emptyStateSubtext}>
+              No active debts in this group at the moment.
+            </Text>
           </View>
         )
       )}
@@ -384,18 +469,55 @@ export const GroupDetailScreen = ({ route }: Props) => {
       )}
       {activeTab === 'Settings' && !groupInfo && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>Group not found.</Text>
+          <View style={styles.emptyIconContainer}>
+            <Search size={40} color={theme.colors.outline} />
+          </View>
+          <Text style={styles.emptyStateText}>Group not found</Text>
+          <Text style={styles.emptyStateSubtext}>
+            We couldn't find the details for this group. It may have been deleted.
+          </Text>
         </View>
       )}
 
       {/* FAB */}
       <TouchableOpacity 
         style={styles.fab}
-        onPress={() => (navigation as any).navigate('AddExpense')}
+        onPress={() => (navigation as any).navigate('AddExpense', { groupId })}
         activeOpacity={0.8}
       >
         <Plus color={theme.colors.white} size={28} />
       </TouchableOpacity>
+
+      {/* More Options Menu */}
+      <BottomPickerModal
+        visible={isMoreMenuVisible}
+        title="Group Options"
+        selectedValue=""
+        onClose={() => setIsMoreMenuVisible(false)}
+        onSelect={(value) => {
+          setIsMoreMenuVisible(false);
+          switch (value) {
+            case 'settings':
+              setActiveTab('Settings');
+              break;
+            case 'edit':
+              // Navigation to edit screen would go here
+              break;
+            case 'leave':
+              if (groupInfo) leaveGroup(groupInfo.id);
+              break;
+            case 'delete':
+              if (groupInfo) deleteGroup(groupInfo.id);
+              break;
+          }
+        }}
+        options={[
+          { label: 'View Settings', value: 'settings', icon: <Settings size={20} color={theme.colors.onSurfaceVariant} /> },
+          { label: 'Edit Group', value: 'edit', icon: <Edit3 size={20} color={theme.colors.onSurfaceVariant} /> },
+          { label: 'Leave Group', value: 'leave', icon: <LogOut size={20} color={theme.colors.danger} /> },
+          { label: 'Delete Group', value: 'delete', icon: <Trash2 size={20} color={theme.colors.danger} /> },
+        ]}
+      />
     </SafeAreaView>
   );
 };
@@ -449,6 +571,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  headerGroupAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   memberAvatarStack: {
     flexDirection: 'row',
@@ -460,6 +588,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 2,
     borderColor: theme.colors.primary,
+  },
+  stackAvatarOverlap: {
+    marginLeft: -12,
   },
   stackMore: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -733,12 +864,36 @@ const styles = StyleSheet.create({
   },
 
   emptyState: {
+    flex: 1,
     alignItems: 'center',
-    marginTop: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 120, // Shift up to center visually in the remaining area
+  },
+  emptyListContent: {
+    flexGrow: 1,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.surfaceContainerLow,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   emptyStateText: {
+    color: theme.colors.primary,
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
     color: theme.colors.outline,
-    fontSize: 16,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 
   // FAB
